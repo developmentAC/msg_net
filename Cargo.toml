@@ -1,0 +1,40 @@
+[package]
+name = "msg_net"
+version = "0.7.0"
+edition = "2021"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+regex = "1.10"
+uuid = { version = "1.0", features = ["v4"] }
+reqwest = { version = "0.11", features = ["json"] }
+tokio = { version = "1.0", features = ["full"] }
+clap = { version = "4.0", features = ["derive"] }
+thiserror = "1.0"
+anyhow = "1.0"
+chrono = { version = "0.4", features = ["serde"] }
+
+# WebAssembly dependencies
+wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4"
+web-sys = { version = "0.3", features = [
+  "console",
+  "Window",
+  "Document",
+  "Element",
+  "HtmlElement",
+] }
+js-sys = "0.3"
+console_error_panic_hook = "0.1"
+
+[dependencies.getrandom]
+version = "0.2"
+features = ["js"]
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[[bin]]
+name = "msg_net"
+path = "src/main.rs"

@@ -1,0 +1,289 @@
+{
+  "node_colors": {
+    "entity": "#E74C3C",
+    "relationship": "#3498DB",
+    "concept": "#9B59B6",
+    "attribute": "#F39C12",
+    "person": "#E67E22",
+    "place": "#27AE60",
+    "organization": "#34495E",
+    "event": "#E91E63",
+    "product": "#FF5722",
+    "other": "#95A5A6"
+  },
+  "node_shapes": {
+    "entity": "ellipse",
+    "relationship": "box",
+    "concept": "circle",
+    "attribute": "diamond",
+    "person": "circularImage",
+    "place": "square",
+    "organization": "hexagon",
+    "event": "star",
+    "product": "triangle",
+    "other": "dot"
+  },
+  "node_sizes": {
+    "entity": 25,
+    "relationship": 20,
+    "concept": 30,
+    "attribute": 15,
+    "person": 35,
+    "place": 28,
+    "organization": 40,
+    "event": 22,
+    "product": 25,
+    "other": 18
+  },
+  "edge_colors": {
+    "relationship": "#2C3E50",
+    "concept_link": "#8E44AD",
+    "attribute_link": "#D35400",
+    "hierarchy": "#16A085",
+    "temporal": "#C0392B",
+    "functional": "#2980B9",
+    "dependency": "#F39C12",
+    "other": "#7F8C8D"
+  },
+  "edge_styles": {
+    "relationship": "solid",
+    "concept_link": "dashed",
+    "attribute_link": "dotted",
+    "hierarchy": "solid",
+    "temporal": "dashed",
+    "functional": "solid",
+    "dependency": "dotted",
+    "other": "solid"
+  },
+  "layout": {
+    "algorithm": "hierarchical",
+    "spacing": 250.0,
+    "hierarchical": true,
+    "randomSeed": 42,
+    "improvedLayout": true,
+    "clusterThreshold": 150,
+    "nodeSpacing": 120,
+    "treeSpacing": 200,
+    "blockShifting": true,
+    "edgeMinimization": true,
+    "parentCentralization": true,
+    "direction": "UD",
+    "sortMethod": "directed",
+    "shakeTowards": "roots",
+    "levelSeparation": 150
+  },
+  "physics": {
+    "enabled": true,
+    "stabilization": true,
+    "repulsion": 200.0,
+    "spring_length": 150.0,
+    "spring_constant": 0.04
+  },
+  "interaction": {
+    "dragNodes": true,
+    "dragView": true,
+    "hideEdgesOnDrag": false,
+    "hideEdgesOnZoom": false,
+    "hideNodesOnDrag": false,
+    "hover": true,
+    "hoverConnectedEdges": true,
+    "keyboard": {
+      "enabled": true,
+      "speed": {
+        "x": 10,
+        "y": 10,
+        "zoom": 0.02
+      },
+      "bindToWindow": true,
+      "autoFocus": true
+    },
+    "multiselect": true,
+    "navigationButtons": false,
+    "selectable": true,
+    "selectConnectedEdges": true,
+    "tooltipDelay": 300,
+    "zoomView": true,
+    "zoomSpeed": 1
+  },
+  "extraction": {
+    "use_llm": true,
+    "llm_model": "llama3.2",
+    "llm_endpoint": "http://localhost:11434/api/generate",
+    "llm_timeout": 30000,
+    "llm_max_retries": 3,
+    "deep_analysis": true,
+    "confidence_threshold": 0.6,
+    "max_entities_per_sentence": 5,
+    "max_relationships_per_entity": 3,
+    "enable_coreference_resolution": true,
+    "enable_sentiment_analysis": false,
+    "language": "auto",
+    "entity_patterns": [
+      "\\b[A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*\\b",
+      "\\b(?:person|people|individual|user|customer|client|employee|manager|director|CEO|CTO|professor|doctor|student)\\b",
+      "\\b(?:Mr\\.|Mrs\\.|Ms\\.|Dr\\.|Prof\\.)\\s+[A-Z][a-z]+\\b",
+      "\\b[A-Z][a-z]+\\s+(?:Inc\\.|LLC|Corp\\.|Corporation|Company|Ltd\\.|Limited)\\b",
+      "\\b(?:University|College|Institute|Academy|School)\\s+of\\s+[A-Z][a-z]+\\b"
+    ],
+    "relationship_patterns": [
+      "\\b(?:works for|employed by|manages|supervises|reports to|collaborates with)\\b",
+      "\\b(?:has|have|is|are|was|were|contains|includes|owns|belongs to|consists of)\\b",
+      "\\b(?:connected to|related to|associated with|linked to|part of|member of)\\b",
+      "\\b(?:creates|produces|develops|builds|designs|implements|maintains)\\b",
+      "\\b(?:uses|utilizes|depends on|requires|needs|relies on)\\b",
+      "\\b(?:located in|based in|situated in|positioned at|found in)\\b"
+    ],
+    "concept_patterns": [
+      "\\b(?:concept|idea|principle|theory|method|approach|strategy|technique|process)\\b",
+      "\\b(?:system|platform|framework|infrastructure|architecture|design|model)\\b",
+      "\\b(?:workflow|procedure|protocol|methodology|practice|standard|guideline)\\b",
+      "\\b(?:innovation|technology|solution|tool|application|software|hardware)\\b",
+      "\\b(?:project|initiative|program|campaign|effort|endeavor|undertaking)\\b"
+    ],
+    "stop_words": [
+      "the", "a", "an", "and", "or", "but", "in", "on", "at", "to", "for", "of", "with", "by", "from", "up", "about", "into", "through", "during", "before", "after", "above", "below", "between", "among", "throughout", "alongside", "around", "beneath", "beside", "beyond", "during", "except", "inside", "outside", "toward", "under", "within", "without"
+    ],
+    "custom_entity_types": {
+      "technology": {
+        "patterns": ["\\b(?:AI|artificial intelligence|machine learning|ML|deep learning|neural network|blockchain|IoT|cloud computing|API|database|server)\\b"],
+        "color": "#FF6B35",
+        "shape": "hexagon"
+      },
+      "metric": {
+        "patterns": ["\\b\\d+(?:\\.\\d+)?\\s*(?:%|percent|dollars?|€|£|users?|customers?|clicks?|views?|downloads?)\\b"],
+        "color": "#4ECDC4",
+        "shape": "diamond"
+      },
+      "location": {
+        "patterns": ["\\b(?:New York|San Francisco|London|Paris|Tokyo|Berlin|Sydney|Toronto|Boston|Seattle|Austin|Chicago|Miami|Denver|Portland|Vancouver)\\b"],
+        "color": "#45B7D1",
+        "shape": "square"
+      }
+    }
+  },
+  "export": {
+    "default_format": "html",
+    "include_metadata": true,
+    "include_timestamps": true,
+    "include_confidence_scores": true,
+    "include_extraction_methods": true,
+    "compact_json": false,
+    "pretty_print": true,
+    "file_naming": {
+      "use_timestamp": true,
+      "use_source_name": true,
+      "auto_increment": true,
+      "max_filename_length": 100
+    },
+    "html_options": {
+      "embed_dependencies": true,
+      "minify_output": false,
+      "include_source_maps": false,
+      "responsive_design": true,
+      "dark_mode_support": false,
+      "custom_css": "",
+      "custom_js": ""
+    },
+    "csv_options": {
+      "delimiter": ",",
+      "quote_char": "\"",
+      "escape_char": "\\",
+      "include_headers": true,
+      "normalize_newlines": true
+    },
+    "graphml_options": {
+      "include_visual_properties": true,
+      "namespace": "http://graphml.graphdrawing.org/xmlns",
+      "schema_location": "http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd"
+    }
+  },
+  "visualization": {
+    "theme": "professional",
+    "font_family": "Inter, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+    "background_color": "#FAFAFA",
+    "grid": {
+      "enabled": false,
+      "size": 50,
+      "color": "#E0E0E0",
+      "opacity": 0.3
+    },
+    "shadows": {
+      "enabled": true,
+      "node_shadow": true,
+      "edge_shadow": false,
+      "shadow_color": "rgba(0,0,0,0.3)",
+      "shadow_size": 10,
+      "shadow_x": 2,
+      "shadow_y": 2
+    },
+    "animations": {
+      "enabled": true,
+      "duration": 500,
+      "easing": "easeInOutQuart"
+    },
+    "highlighting": {
+      "enabled": true,
+      "highlight_color": "#FFD700",
+      "highlight_opacity": 0.8,
+      "fade_non_highlighted": true,
+      "fade_opacity": 0.1
+    },
+    "clustering": {
+      "enabled": false,
+      "cluster_threshold": 10,
+      "cluster_colors": ["#FF6B6B", "#4ECDC4", "#45B7D1", "#FFA07A", "#98D8C8"],
+      "show_cluster_labels": true
+    }
+  },
+  "performance": {
+    "max_nodes": 1000,
+    "max_edges": 2000,
+    "chunk_size": 100,
+    "lazy_loading": true,
+    "cache_enabled": true,
+    "cache_size": 50,
+    "debounce_delay": 300,
+    "render_timeout": 5000,
+    "memory_limit": "512MB",
+    "parallel_processing": true,
+    "worker_threads": 4
+  },
+  "accessibility": {
+    "high_contrast": false,
+    "large_fonts": false,
+    "keyboard_navigation": true,
+    "screen_reader_support": true,
+    "focus_indicators": true,
+    "aria_labels": true,
+    "color_blind_friendly": false,
+    "reduced_motion": false
+  },
+  "logging": {
+    "level": "info",
+    "console_output": true,
+    "file_output": false,
+    "log_file": "msg_net.log",
+    "max_log_size": "10MB",
+    "log_rotation": true,
+    "include_timestamps": true,
+    "include_stack_traces": false
+  },
+  "advanced": {
+    "experimental_features": false,
+    "beta_algorithms": false,
+    "debug_mode": false,
+    "profiling": false,
+    "memory_profiling": false,
+    "performance_monitoring": false,
+    "custom_plugins": [],
+    "external_apis": {
+      "enabled": false,
+      "endpoints": [],
+      "authentication": {},
+      "rate_limiting": {
+        "requests_per_minute": 60,
+        "burst_size": 10
+      }
+    }
+  }
+}

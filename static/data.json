@@ -1,0 +1,490 @@
+{
+  "nodes": [
+    {
+      "id": "fcbd4244-6fb8-486d-b875-bb5fc82b7576",
+      "label": "Alice",
+      "node_type": "Entity",
+      "color": "#FF6B6B",
+      "shape": "ellipse",
+      "size": 44.550000000000004,
+      "x": -1300.0,
+      "y": -200.0,
+      "physics": true,
+      "metadata": {
+        "confidence": 0.7,
+        "original_text": "Alice",
+        "entity_type": "Person",
+        "attributes": {
+          "name": "Alice"
+        },
+        "position_in_text": [
+          0,
+          5
+        ]
+      }
+    },
+    {
+      "id": "75aba573-3b48-46c6-819f-d05c593d5711",
+      "label": "She",
+      "node_type": "Entity",
+      "color": "#FF6B6B",
+      "shape": "ellipse",
+      "size": 44.550000000000004,
+      "x": -1100.0,
+      "y": -200.0,
+      "physics": true,
+      "metadata": {
+        "confidence": 0.7,
+        "original_text": "She",
+        "entity_type": "Person",
+        "attributes": {
+          "name": "She"
+        },
+        "position_in_text": [
+          0,
+          3
+        ]
+      }
+    },
+    {
+      "id": "963f432e-1ddb-44f6-a0f5-a294964c7bb4",
+      "label": "customer",
+      "node_type": "Entity",
+      "color": "#FF6B6B",
+      "shape": "ellipse",
+      "size": 44.550000000000004,
+      "x": -900.0,
+      "y": -200.0,
+      "physics": true,
+      "metadata": {
+        "confidence": 0.7,
+        "original_text": "customer",
+        "entity_type": "Other(\"customer\")",
+        "attributes": {
+          "name": "customer"
+        },
+        "position_in_text": [
+          81,
+          89
+        ]
+      }
+    },
+    {
+      "id": "5713b793-6791-40f1-a86e-ac5847257e09",
+      "label": "The",
+      "node_type": "Entity",
+      "color": "#FF6B6B",
+      "shape": "ellipse",
+      "size": 44.550000000000004,
+      "x": -700.0,
+      "y": -200.0,
+      "physics": true,
+      "metadata": {
+        "confidence": 0.7,
+        "original_text": "The",
+        "entity_type": "Person",
+        "attributes": {
+          "name": "The"
+        },
+        "position_in_text": [
+          0,
+          3
+        ]
+      }
+    },
+    {
+      "id": "5661b64f-76a6-4c24-86cc-654a976dffdd",
+      "label": "user",
+      "node_type": "Entity",
+      "color": "#FF6B6B",
+      "shape": "ellipse",
+      "size": 44.550000000000004,
+      "x": -500.0,
+      "y": -200.0,
+      "physics": true,
+      "metadata": {
+        "confidence": 0.7,
+        "original_text": "user",
+        "entity_type": "Other(\"user\")",
+        "attributes": {
+          "name": "user"
+        },
+        "position_in_text": [
+          57,
+          61
+        ]
+      }
+    },
+    {
+      "id": "efeda5c6-a574-4e73-9209-eb94115729c1",
+      "label": "Bob",
+      "node_type": "Entity",
+      "color": "#FF6B6B",
+      "shape": "ellipse",
+      "size": 44.550000000000004,
+      "x": -300.0,
+      "y": -200.0,
+      "physics": true,
+      "metadata": {
+        "confidence": 0.7,
+        "original_text": "Bob",
+        "entity_type": "Person",
+        "attributes": {
+          "name": "Bob"
+        },
+        "position_in_text": [
+          0,
+          3
+        ]
+      }
+    },
+    {
+      "id": "d2d404a9-15d1-46b8-be9f-8804d15a289c",
+      "label": "This",
+      "node_type": "Entity",
+      "color": "#FF6B6B",
+      "shape": "ellipse",
+      "size": 44.550000000000004,
+      "x": -100.0,
+      "y": -200.0,
+      "physics": true,
+      "metadata": {
+        "confidence": 0.7,
+        "original_text": "This",
+        "entity_type": "Person",
+        "attributes": {
+          "name": "This"
+        },
+        "position_in_text": [
+          0,
+          4
+        ]
+      }
+    },
+    {
+      "id": "a7ba0ad7-31b4-4850-9d55-4ac5b22651cf",
+      "label": "Each",
+      "node_type": "Entity",
+      "color": "#FF6B6B",
+      "shape": "ellipse",
+      "size": 44.550000000000004,
+      "x": 100.0,
+      "y": -200.0,
+      "physics": true,
+      "metadata": {
+        "confidence": 0.7,
+        "original_text": "Each",
+        "entity_type": "Person",
+        "attributes": {
+          "name": "Each"
+        },
+        "position_in_text": [
+          0,
+          4
+        ]
+      }
+    },
+    {
+      "id": "6a32edca-0990-499e-937f-17327176e672",
+      "label": "client",
+      "node_type": "Entity",
+      "color": "#FF6B6B",
+      "shape": "ellipse",
+      "size": 44.550000000000004,
+      "x": 300.0,
+      "y": -200.0,
+      "physics": true,
+      "metadata": {
+        "confidence": 0.7,
+        "original_text": "client",
+        "entity_type": "Other(\"client\")",
+        "attributes": {
+          "name": "client"
+        },
+        "position_in_text": [
+          5,
+          11
+        ]
+      }
+    },
+    {
+      "id": "d5a26268-2a5c-4574-a4bd-3d8bd4f60f70",
+      "label": "These",
+      "node_type": "Entity",
+      "color": "#FF6B6B",
+      "shape": "ellipse",
+      "size": 44.550000000000004,
+      "x": 500.0,
+      "y": -200.0,
+      "physics": true,
+      "metadata": {
+        "confidence": 0.7,
+        "original_text": "These",
+        "entity_type": "Person",
+        "attributes": {
+          "name": "These"
+        },
+        "position_in_text": [
+          0,
+          5
+        ]
+      }
+    },
+    {
+      "id": "ad07fcf5-1b08-4737-b79b-639c774e04c7",
+      "label": "Carol",
+      "node_type": "Entity",
+      "color": "#FF6B6B",
+      "shape": "ellipse",
+      "size": 44.550000000000004,
+      "x": 700.0,
+      "y": -200.0,
+      "physics": true,
+      "metadata": {
+        "confidence": 0.7,
+        "original_text": "Carol",
+        "entity_type": "Person",
+        "attributes": {
+          "name": "Carol"
+        },
+        "position_in_text": [
+          29,
+          34
+        ]
+      }
+    },
+    {
+      "id": "0c518633-ec3a-477a-8f91-f0a44885edbc",
+      "label": "They",
+      "node_type": "Entity",
+      "color": "#FF6B6B",
+      "shape": "ellipse",
+      "size": 44.550000000000004,
+      "x": 900.0,
+      "y": -200.0,
+      "physics": true,
+      "metadata": {
+        "confidence": 0.7,
+        "original_text": "They",
+        "entity_type": "Person",
+        "attributes": {
+          "name": "They"
+        },
+        "position_in_text": [
+          0,
+          4
+        ]
+      }
+    },
+    {
+      "id": "c6c57e02-3618-4011-8490-af0aa69d3376",
+      "label": "Regular",
+      "node_type": "Entity",
+      "color": "#FF6B6B",
+      "shape": "ellipse",
+      "size": 44.550000000000004,
+      "x": 1100.0,
+      "y": -200.0,
+      "physics": true,
+      "metadata": {
+        "confidence": 0.7,
+        "original_text": "Regular",
+        "entity_type": "Person",
+        "attributes": {
+          "name": "Regular"
+        },
+        "position_in_text": [
+          0,
+          7
+        ]
+      }
+    },
+    {
+      "id": "9d7b1e57-56d5-42c0-a3c3-abc9d0bef51a",
+      "label": "system",
+      "node_type": "Concept",
+      "color": "#45B7D1",
+      "shape": "circle",
+      "size": 29.5,
+      "x": -200.0,
+      "y": 0.0,
+      "physics": true,
+      "metadata": {
+        "confidence": 0.6,
+        "original_text": "system",
+        "entity_type": "concept",
+        "attributes": {
+          "related_entities_count": "0",
+          "description": "Concept 'system' mentioned in context: Bob, who is Alice s colleague, manages the database system that stores all the customer information"
+        },
+        "position_in_text": [
+          52,
+          58
+        ]
+      }
+    },
+    {
+      "id": "73f5d9b9-c8c2-4199-a61a-302b90753a22",
+      "label": "process",
+      "node_type": "Concept",
+      "color": "#45B7D1",
+      "shape": "circle",
+      "size": 29.5,
+      "x": 0.0,
+      "y": 0.0,
+      "physics": true,
+      "metadata": {
+        "confidence": 0.6,
+        "original_text": "process",
+        "entity_type": "concept",
+        "attributes": {
+          "description": "Concept 'process' mentioned in context: TechCorp uses advanced analytics to process the customer data",
+          "related_entities_count": "0"
+        },
+        "position_in_text": [
+          36,
+          43
+        ]
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "70f7dda9-d0e1-4ae7-a027-7ed8e6dcf9fd",
+      "from": "75aba573-3b48-46c6-819f-d05c593d5711",
+      "to": "963f432e-1ddb-44f6-a0f5-a294964c7bb4",
+      "label": "She is a customer",
+      "color": "#4ECDC4",
+      "width": 2.2,
+      "arrows": "to",
+      "edge_type": "EntityRelationship",
+      "metadata": {
+        "confidence": 0.6,
+        "relationship_type": "IsA",
+        "bidirectional": false,
+        "weight": 0.6
+      }
+    },
+    {
+      "id": "bf72ac5f-bf68-4e2d-9215-2f062e9778ab",
+      "from": "5713b793-6791-40f1-a86e-ac5847257e09",
+      "to": "5661b64f-76a6-4c24-86cc-654a976dffdd",
+      "label": "The has user",
+      "color": "#4ECDC4",
+      "width": 2.2,
+      "arrows": "to",
+      "edge_type": "EntityRelationship",
+      "metadata": {
+        "confidence": 0.6,
+        "relationship_type": "Has",
+        "bidirectional": false,
+        "weight": 0.6
+      }
+    },
+    {
+      "id": "9d7b1e57-56d5-42c0-a3c3-abc9d0bef51a-5713b793-6791-40f1-a86e-ac5847257e09",
+      "from": "9d7b1e57-56d5-42c0-a3c3-abc9d0bef51a",
+      "to": "5713b793-6791-40f1-a86e-ac5847257e09",
+      "label": "relates to",
+      "color": "#CCCCCC",
+      "width": 1.0,
+      "arrows": "to",
+      "edge_type": "ConceptEntity",
+      "metadata": {
+        "confidence": 0.6499999999999999,
+        "relationship_type": "related_to",
+        "bidirectional": true,
+        "weight": 0.5
+      }
+    },
+    {
+      "id": "9d7b1e57-56d5-42c0-a3c3-abc9d0bef51a-5661b64f-76a6-4c24-86cc-654a976dffdd",
+      "from": "9d7b1e57-56d5-42c0-a3c3-abc9d0bef51a",
+      "to": "5661b64f-76a6-4c24-86cc-654a976dffdd",
+      "label": "relates to",
+      "color": "#CCCCCC",
+      "width": 1.0,
+      "arrows": "to",
+      "edge_type": "ConceptEntity",
+      "metadata": {
+        "confidence": 0.6499999999999999,
+        "relationship_type": "related_to",
+        "bidirectional": true,
+        "weight": 0.5
+      }
+    },
+    {
+      "id": "9d7b1e57-56d5-42c0-a3c3-abc9d0bef51a-efeda5c6-a574-4e73-9209-eb94115729c1",
+      "from": "9d7b1e57-56d5-42c0-a3c3-abc9d0bef51a",
+      "to": "efeda5c6-a574-4e73-9209-eb94115729c1",
+      "label": "relates to",
+      "color": "#CCCCCC",
+      "width": 1.0,
+      "arrows": "to",
+      "edge_type": "ConceptEntity",
+      "metadata": {
+        "confidence": 0.6499999999999999,
+        "relationship_type": "related_to",
+        "bidirectional": true,
+        "weight": 0.5
+      }
+    }
+  ],
+  "config": {
+    "node_colors": {
+      "entity": "#FF6B6B",
+      "relationship": "#4ECDC4",
+      "concept": "#45B7D1",
+      "attribute": "#FFA07A"
+    },
+    "node_shapes": {
+      "entity": "ellipse",
+      "relationship": "box",
+      "concept": "circle",
+      "attribute": "diamond"
+    },
+    "layout": {
+      "algorithm": "hierarchical",
+      "spacing": 200.0,
+      "hierarchical": true
+    },
+    "physics": {
+      "enabled": true,
+      "stabilization": true,
+      "repulsion": 200.0,
+      "spring_length": 150.0,
+      "spring_constant": 0.04
+    },
+    "extraction": {
+      "use_llm": false,
+      "llm_model": "llama3.2",
+      "llm_endpoint": "http://localhost:11434/api/generate",
+      "entity_patterns": [
+        "\\b[A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*\\b",
+        "\\b(?:person|people|individual|user|customer|client)\\b"
+      ],
+      "relationship_patterns": [
+        "\\b(?:has|have|is|are|was|were|contains|includes|owns|belongs)\\b",
+        "\\b(?:connected to|related to|associated with|linked to)\\b"
+      ],
+      "concept_patterns": [
+        "\\b(?:concept|idea|principle|theory|method|approach|strategy)\\b",
+        "\\b(?:system|process|workflow|procedure|protocol)\\b"
+      ]
+    }
+  },
+  "metadata": {
+    "total_nodes": 15,
+    "total_edges": 5,
+    "node_types": {
+      "concept": 2,
+      "entity": 13
+    },
+    "edge_types": {
+      "relationship": 2,
+      "concept_entity": 3
+    },
+    "creation_timestamp": "2025-08-05T15:05:07.701548+00:00",
+    "source_text_length": 1376
+  }
+}

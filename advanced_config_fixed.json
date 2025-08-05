@@ -1,0 +1,56 @@
+{
+  "node_colors": {
+    "entity": "#FF6B6B",
+    "relationship": "#4ECDC4",
+    "concept": "#45B7D1",
+    "attribute": "#FFA07A"
+  },
+  "node_shapes": {
+    "entity": "ellipse",
+    "relationship": "box",
+    "concept": "circle",
+    "attribute": "diamond"
+  },
+  "layout": {
+    "algorithm": "hierarchical",
+    "spacing": 300.0,
+    "hierarchical": true
+  },
+  "physics": {
+    "enabled": true,
+    "stabilization": true,
+    "repulsion": 250.0,
+    "spring_length": 200.0,
+    "spring_constant": 0.05
+  },
+  "extraction": {
+    "use_llm": true,
+    "llm_model": "llama3.2",
+    "llm_endpoint": "http://localhost:11434/api/generate",
+    "entity_patterns": [
+      "\\b[A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*\\b",
+      "\\b(?:person|people|individual|user|customer|client|organization|company|institution)\\b",
+      "\\b(?:system|application|platform|service|tool|software)\\b",
+      "\\b(?:project|initiative|program|process|procedure)\\b",
+      "\\b(?:data|information|knowledge|resource|asset)\\b",
+      "\\b(?:Dr\\.|Mr\\.|Ms\\.|Mrs\\.|Prof\\.|CEO|CTO|Manager|Director)\\s+[A-Z][a-z]+\\b"
+    ],
+    "relationship_patterns": [
+      "\\b(?:has|have|is|are|was|were|contains|includes|owns|belongs|manages|controls)\\b",
+      "\\b(?:connected to|related to|associated with|linked to|depends on|uses|utilizes)\\b",
+      "\\b(?:creates|develops|builds|designs|implements|maintains|supports)\\b",
+      "\\b(?:reports to|works with|collaborates with|partners with|communicates with)\\b",
+      "\\b(?:leads|directs|supervises|coordinates|oversees|administers)\\b",
+      "\\b(?:influences|impacts|affects|drives|enables|facilitates)\\b"
+    ],
+    "concept_patterns": [
+      "\\b(?:concept|idea|principle|theory|methodology|approach|strategy)\\b",
+      "\\b(?:goal|objective|target|aim|purpose|mission|vision)\\b",
+      "\\b(?:requirement|specification|standard|guideline|policy|rule)\\b",
+      "\\b(?:technology|framework|architecture|infrastructure|platform)\\b",
+      "\\b(?:process|workflow|procedure|method|technique|practice)\\b",
+      "\\b(?:quality|performance|efficiency|effectiveness|productivity)\\b",
+      "\\b(?:innovation|transformation|improvement|optimization|enhancement)\\b"
+    ]
+  }
+}

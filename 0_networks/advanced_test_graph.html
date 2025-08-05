@@ -1,0 +1,813 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entity Relationship Graph</title>
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            overflow: hidden;
+        }
+        
+        .header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 15px 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 1000;
+            position: relative;
+        }
+        
+        .main-container {
+            display: flex;
+            height: calc(100vh - 70px);
+            position: relative;
+        }
+        
+        .side-panel {
+            width: 300px;
+            background-color: white;
+            box-shadow: 2px 0 4px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+            z-index: 100;
+        }
+        
+        .side-panel.collapsed {
+            transform: translateX(-100%);
+        }
+        
+        .panel-toggle {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: #34495e;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 0 5px 5px 0;
+            cursor: pointer;
+            z-index: 200;
+            transition: all 0.3s ease;
+        }
+        
+        .panel-toggle.active {
+            background-color: #27ae60;
+            left: 310px;
+        }
+        
+        .panel-toggle.collapsed {
+            background-color: #e74c3c;
+            left: 10px;
+        }
+        
+        .controls {
+            padding: 20px;
+        }
+        
+        .control-section {
+            margin-bottom: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .section-header {
+            background-color: #ecf0f1;
+            padding: 12px 15px;
+            font-weight: bold;
+            cursor: pointer;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .section-header:hover {
+            background-color: #d5dbdb;
+        }
+        
+        .section-content {
+            padding: 15px;
+            display: none;
+        }
+        
+        .section-content.expanded {
+            display: block;
+        }
+        
+        .control-group {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+        }
+        
+        .control-group label {
+            font-weight: bold;
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        .graph-container {
+            flex: 1;
+            background-color: white;
+            position: relative;
+        }
+        
+        #export-container {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .info-panel {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            max-width: 300px;
+            min-width: 250px;
+            z-index: 50;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+        
+        .info-panel.collapsed {
+            transform: translateX(calc(100% + 20px));
+            opacity: 0;
+        }
+        
+        .info-panel h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 16px;
+            color: #34495e;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 8px;
+        }
+        
+        .info-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: #34495e;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 60;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .info-toggle.panel-open {
+            right: 290px;
+            background-color: #27ae60;
+        }
+        
+        .info-toggle:hover {
+            background-color: #2c3e50;
+            transform: scale(1.05);
+        }
+        
+        .info-toggle.panel-open:hover {
+            background-color: #229954;
+            transform: scale(1.05);
+        }
+        
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            margin: 3px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        button.toggle-off {
+            background-color: #e74c3c;
+        }
+        
+        button.toggle-off:hover {
+            background-color: #c0392b;
+        }
+        
+        button.toggle-on {
+            background-color: #27ae60;
+        }
+        
+        button.toggle-on:hover {
+            background-color: #229954;
+        }
+        
+        select, input {
+            padding: 8px;
+            margin: 3px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .node-info, .edge-info {
+            background-color: #ecf0f1;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            display: none;
+        }
+        
+        .expand-icon {
+            transition: transform 0.3s ease;
+        }
+        
+        .expand-icon.rotated {
+            transform: rotate(180deg);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Entity Relationship Graph</h1>
+        <p>Interactive Entity Relationship Graph Visualizer</p>
+    </div>
+    
+    <div class="main-container">
+        <button class="panel-toggle active" onclick="toggleSidePanel()">☰</button>
+        
+        <div class="side-panel" id="sidePanel">
+            <div class="controls">
+                <h3>Graph Controls</h3>
+                
+                <!-- Layout Controls -->
+                <div class="control-section">
+                    <div class="section-header" onclick="toggleSection('layout')">
+                        Layout Controls
+                        <span class="expand-icon">▼</span>
+                    </div>
+                    <div class="section-content expanded" id="layout">
+                        <div class="control-group">
+                            <label>Layout Type:</label>
+                            <button onclick="changeLayout('hierarchical')">Hierarchical</button>
+                            <button onclick="changeLayout('force')">Force-Directed</button>
+                            <button onclick="changeLayout('circular')">Circular</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- View Controls -->
+                <div class="control-section">
+                    <div class="section-header" onclick="toggleSection('view')">
+                        View Controls
+                        <span class="expand-icon">▼</span>
+                    </div>
+                    <div class="section-content expanded" id="view">
+                        <div class="control-group">
+                            <label>Zoom & Position:</label>
+                            <button onclick="zoomIn()">Zoom In</button>
+                            <button onclick="zoomOut()">Zoom Out</button>
+                            <button onclick="fitGraph()">Fit to View</button>
+                            <button onclick="centerGraph()">Center Graph</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Physics Controls -->
+                <div class="control-section">
+                    <div class="section-header" onclick="toggleSection('physics')">
+                        Physics Controls
+                        <span class="expand-icon">▼</span>
+                    </div>
+                    <div class="section-content expanded" id="physics">
+                        <div class="control-group">
+                            <label>Physics Simulation:</label>
+                            <button id="physicsToggle" class="toggle-on" onclick="togglePhysics()">Physics: ON</button>
+                            <button onclick="stabilizeGraph()">Stabilize</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Label Controls -->
+                <div class="control-section">
+                    <div class="section-header" onclick="toggleSection('labels')">
+                        Label Controls
+                        <span class="expand-icon">▼</span>
+                    </div>
+                    <div class="section-content" id="labels">
+                        <div class="control-group">
+                            <label>Label Visibility:</label>
+                            <button id="nodeLabelsToggle" class="toggle-on" onclick="toggleNodeLabels()">Node Labels: ON</button>
+                            <button id="edgeLabelsToggle" class="toggle-on" onclick="toggleEdgeLabels()">Edge Labels: ON</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Filter Controls -->
+                <div class="control-section">
+                    <div class="section-header" onclick="toggleSection('filters')">
+                        Filter Controls
+                        <span class="expand-icon">▼</span>
+                    </div>
+                    <div class="section-content" id="filters">
+                        <div class="control-group">
+                            <label>Node Type Filter:</label>
+                            <select onchange="filterNodes(this.value)">
+                                <option value="">Show All Nodes</option>
+                                <option value="entity">Entities Only</option>
+                                <option value="concept">Concepts Only</option>
+                                <option value="attribute">Attributes Only</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Export Controls -->
+                <div class="control-section">
+                    <div class="section-header" onclick="toggleSection('export')">
+                        Export Controls
+                        <span class="expand-icon">▼</span>
+                    </div>
+                    <div class="section-content" id="export">
+                        <div class="control-group">
+                            <label>Export Options:</label>
+                            <button onclick="exportGraph('json')">Export JSON</button>
+                            <button onclick="exportGraph('png')">Export PNG</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="graph-container">
+            <div id="export-container"></div>
+            
+            <button class="info-toggle panel-open" id="infoToggle" onclick="toggleInfoPanel()">ℹ️</button>
+            
+            <div class="info-panel" id="infoPanel">
+                <h3>Information Panel</h3>
+                <div id="node-info" class="node-info">
+                    <h4>Node Information</h4>
+                    <div id="node-details"></div>
+                </div>
+                <div id="edge-info" class="edge-info">
+                    <h4>Edge Information</h4>
+                    <div id="edge-details"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Global variables
+        let currentNetwork = null;
+        let originalNodes = null;
+        let originalEdges = null;
+        let showNodeLabels = true;
+        let showEdgeLabels = true;
+        let physicsEnabled = true;
+        let sidePanelOpen = true;
+        let infoPanelOpen = true;
+        
+        // Side panel and section controls
+        function toggleSidePanel() {
+            const panel = document.getElementById('sidePanel');
+            const toggle = document.querySelector('.panel-toggle');
+            
+            sidePanelOpen = !sidePanelOpen;
+            
+            if (sidePanelOpen) {
+                panel.classList.remove('collapsed');
+                toggle.classList.add('active');
+                toggle.classList.remove('collapsed');
+                toggle.textContent = '☰';
+            } else {
+                panel.classList.add('collapsed');
+                toggle.classList.remove('active');
+                toggle.classList.add('collapsed');
+                toggle.textContent = '►';
+            }
+        }
+        
+        function toggleInfoPanel() {
+            const panel = document.getElementById('infoPanel');
+            const toggle = document.getElementById('infoToggle');
+            
+            infoPanelOpen = !infoPanelOpen;
+            
+            if (infoPanelOpen) {
+                panel.classList.remove('collapsed');
+                toggle.classList.add('panel-open');
+                toggle.textContent = 'ℹ️';
+            } else {
+                panel.classList.add('collapsed');
+                toggle.classList.remove('panel-open');
+                toggle.textContent = '►';
+            }
+        }
+        
+        function toggleSection(sectionId) {
+            const content = document.getElementById(sectionId);
+            const header = content.previousElementSibling;
+            const icon = header.querySelector('.expand-icon');
+            
+            if (content.classList.contains('expanded')) {
+                content.classList.remove('expanded');
+                icon.classList.remove('rotated');
+            } else {
+                content.classList.add('expanded');
+                icon.classList.add('rotated');
+            }
+        }
+        
+        function updateToggleButton(buttonId, isOn, onText, offText) {
+            const button = document.getElementById(buttonId);
+            if (isOn) {
+                button.className = 'toggle-on';
+                button.textContent = onText;
+            } else {
+                button.className = 'toggle-off';
+                button.textContent = offText;
+            }
+        }
+        
+        // Layout change function
+        function changeLayout(layoutType) {
+            if (currentNetwork) {
+                console.log('Changing layout to:', layoutType);
+                let layoutOptions = {};
+                
+                switch(layoutType) {
+                    case 'hierarchical':
+                        layoutOptions = {
+                            hierarchical: {
+                                enabled: true,
+                                direction: 'UD',
+                                sortMethod: 'directed',
+                                nodeSpacing: 200,
+                                levelSeparation: 150
+                            }
+                        };
+                        break;
+                    case 'force':
+                        layoutOptions = {
+                            hierarchical: { enabled: false },
+                            randomSeed: Math.floor(Math.random() * 1000)
+                        };
+                        break;
+                    case 'circular':
+                        // Implement circular layout
+                        const nodes = currentNetwork.body.data.nodes.get();
+                        const nodePositions = {};
+                        const centerX = 0, centerY = 0;
+                        const radius = Math.max(200, nodes.length * 20);
+                        
+                        nodes.forEach((node, index) => {
+                            const angle = (2 * Math.PI * index) / nodes.length;
+                            nodePositions[node.id] = {
+                                x: centerX + radius * Math.cos(angle),
+                                y: centerY + radius * Math.sin(angle)
+                            };
+                        });
+                        
+                        currentNetwork.setData({
+                            nodes: nodes.map(n => ({ ...n, ...nodePositions[n.id] })),
+                            edges: currentNetwork.body.data.edges.get()
+                        });
+                        return;
+                }
+                
+                currentNetwork.setOptions({ layout: layoutOptions });
+                currentNetwork.stabilize();
+            }
+        }
+        
+        // View control functions
+        function zoomIn() {
+            if (currentNetwork) {
+                const scale = currentNetwork.getScale();
+                currentNetwork.moveTo({ scale: scale * 1.2 });
+            }
+        }
+        
+        function zoomOut() {
+            if (currentNetwork) {
+                const scale = currentNetwork.getScale();
+                currentNetwork.moveTo({ scale: scale * 0.8 });
+            }
+        }
+        
+        function fitGraph() {
+            if (currentNetwork) {
+                currentNetwork.fit({ animation: true });
+            }
+        }
+        
+        function centerGraph() {
+            if (currentNetwork) {
+                currentNetwork.moveTo({ position: { x: 0, y: 0 } });
+            }
+        }
+        
+        // Physics control functions
+        function togglePhysics() {
+            if (currentNetwork) {
+                physicsEnabled = !physicsEnabled;
+                const physicsOptions = {
+                    enabled: physicsEnabled,
+                    stabilization: {
+                        enabled: window.graphData.config.physics.stabilization,
+                        iterations: 1000
+                    },
+                    repulsion: {
+                        nodeDistance: window.graphData.config.physics.repulsion,
+                        centralGravity: 0.1,
+                        springLength: window.graphData.config.physics.spring_length,
+                        springConstant: window.graphData.config.physics.spring_constant
+                    }
+                };
+                currentNetwork.setOptions({ physics: physicsOptions });
+                updateToggleButton('physicsToggle', physicsEnabled, 'Physics: ON', 'Physics: OFF');
+                console.log('Physics:', physicsEnabled ? 'enabled' : 'disabled');
+            }
+        }
+        
+        function stabilizeGraph() {
+            if (currentNetwork) {
+                currentNetwork.stabilize();
+                console.log('Graph stabilization initiated');
+                // Optional: Add a timeout to show when stabilization is complete
+                currentNetwork.once('stabilizationIterationsDone', function() {
+                    console.log('Graph stabilization completed');
+                });
+            }
+        }
+        
+        // Label control functions
+        function toggleNodeLabels() {
+            if (currentNetwork && originalNodes) {
+                showNodeLabels = !showNodeLabels;
+                const nodes = originalNodes.map(node => ({
+                    ...node,
+                    label: showNodeLabels ? node.originalLabel || node.label : ''
+                }));
+                
+                currentNetwork.setData({
+                    nodes: nodes,
+                    edges: currentNetwork.body.data.edges.get()
+                });
+                updateToggleButton('nodeLabelsToggle', showNodeLabels, 'Node Labels: ON', 'Node Labels: OFF');
+                console.log('Node labels:', showNodeLabels ? 'shown' : 'hidden');
+            }
+        }
+        
+        function toggleEdgeLabels() {
+            if (currentNetwork && originalEdges) {
+                showEdgeLabels = !showEdgeLabels;
+                const edges = originalEdges.map(edge => ({
+                    ...edge,
+                    label: showEdgeLabels ? edge.originalLabel || edge.label : ''
+                }));
+                
+                currentNetwork.setData({
+                    nodes: currentNetwork.body.data.nodes.get(),
+                    edges: edges
+                });
+                updateToggleButton('edgeLabelsToggle', showEdgeLabels, 'Edge Labels: ON', 'Edge Labels: OFF');
+                console.log('Edge labels:', showEdgeLabels ? 'shown' : 'hidden');
+            }
+        }
+        
+        // Node filtering function
+        function filterNodes(nodeType) {
+            if (currentNetwork && originalNodes) {
+                console.log('Filtering nodes by type:', nodeType);
+                
+                let filteredNodes = originalNodes;
+                let filteredEdges = originalEdges;
+                
+                if (nodeType) {
+                    filteredNodes = originalNodes.filter(node => 
+                        node.group === nodeType || 
+                        node.node_type === nodeType || 
+                        node.type === nodeType
+                    );
+                    
+                    const nodeIds = new Set(filteredNodes.map(n => n.id));
+                    filteredEdges = originalEdges.filter(edge => 
+                        nodeIds.has(edge.from) && nodeIds.has(edge.to)
+                    );
+                }
+                
+                currentNetwork.setData({
+                    nodes: filteredNodes,
+                    edges: filteredEdges
+                });
+            }
+        }
+        
+        // Export functions
+        function exportGraph(format) {
+            console.log('Exporting graph as:', format);
+            
+            if (format === 'json') {
+                const graphData = {
+                    nodes: currentNetwork.body.data.nodes.get(),
+                    edges: currentNetwork.body.data.edges.get(),
+                    config: window.graphData.config
+                };
+                
+                const dataStr = JSON.stringify(graphData, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(dataBlob);
+                
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'graph_export.json';
+                link.click();
+                
+                URL.revokeObjectURL(url);
+            } else if (format === 'png') {
+                // Note: PNG export requires additional vis.js configuration
+                console.log('PNG export not implemented in this version');
+                alert('PNG export requires server-side rendering. Use browser screenshot instead.');
+            }
+        }
+        
+        // Node and edge selection handlers
+        function onNodeSelected(nodeId) {
+            console.log('Node selected:', nodeId);
+            const nodeData = currentNetwork.body.data.nodes.get(nodeId);
+            
+            document.getElementById('node-info').style.display = 'block';
+            document.getElementById('edge-info').style.display = 'none';
+            
+            if (nodeData) {
+                document.getElementById('node-details').innerHTML = `
+                    <strong>ID:</strong> ${nodeData.id}<br/>
+                    <strong>Label:</strong> ${nodeData.label}<br/>
+                    <strong>Type:</strong> ${nodeData.node_type || nodeData.group || 'Unknown'}<br/>
+                    <strong>Confidence:</strong> ${nodeData.confidence || 'N/A'}
+                `;
+            }
+        }
+        
+        function onEdgeSelected(edgeId) {
+            console.log('Edge selected:', edgeId);
+            const edgeData = currentNetwork.body.data.edges.get(edgeId);
+            
+            document.getElementById('edge-info').style.display = 'block';
+            document.getElementById('node-info').style.display = 'none';
+            
+            if (edgeData) {
+                document.getElementById('edge-details').innerHTML = `
+                    <strong>ID:</strong> ${edgeData.id}<br/>
+                    <strong>From:</strong> ${edgeData.from}<br/>
+                    <strong>To:</strong> ${edgeData.to}<br/>
+                    <strong>Label:</strong> ${edgeData.label}<br/>
+                    <strong>Type:</strong> ${edgeData.relationship_type || 'Unknown'}
+                `;
+            }
+        }
+    </script>
+
+        <script>
+            // Graph data embedded directly in HTML
+            window.graphData = {
+                nodes: [{"id":"361c13fd-b78a-43c5-b376-4b10ff3f920e","label":"As","node_type":"Entity","color":"#FF6B6B","shape":"ellipse","size":48.6,"x":-3450.0,"y":-200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"As","entity_type":"Person","attributes":{"name":"As","description":"sun set over the Manhattan skyline"},"position_in_text":[0,2]}},{"id":"5336e595-f430-4cbe-bab6-4ac675388a83","label":"description: sun set over the Manhattan skyline","node_type":"Attribute","color":"#FFA07A","shape":"diamond","size":20.0,"x":-750.0,"y":200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"sun set over the Manhattan skyline","entity_type":"Description","attributes":{"parent_entity":"As","attribute_name":"description"},"position_in_text":null}},{"id":"e98f64fd-c5c2-47ab-9d7f-4cdc4a477d1b","label":"Manhattan","node_type":"Entity","color":"#FF6B6B","shape":"ellipse","size":44.550000000000004,"x":-3150.0,"y":-200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"Manhattan","entity_type":"Person","attributes":{"name":"Manhattan"},"position_in_text":[24,33]}},{"id":"5ec15b6c-947e-41f3-b766-f078114edeff","label":"Rachel Lee","node_type":"Entity","color":"#FF6B6B","shape":"ellipse","size":48.6,"x":-2850.0,"y":-200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"Rachel Lee","entity_type":"Person","attributes":{"description":"prominent figure in the tech world","name":"Rachel Lee"},"position_in_text":[43,53]}},{"id":"691034f8-d770-4043-a345-4abae7c16f6e","label":"description: prominent figure in the tech world","node_type":"Attribute","color":"#FFA07A","shape":"diamond","size":20.0,"x":-450.0,"y":200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"prominent figure in the tech world","entity_type":"Description","attributes":{"parent_entity":"Rachel Lee","attribute_name":"description"},"position_in_text":null}},{"id":"8ef51162-f88f-466e-9c75-328a9656f198","label":"Google","node_type":"Entity","color":"#FF6B6B","shape":"ellipse","size":44.550000000000004,"x":-2550.0,"y":-200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"Google","entity_type":"Person","attributes":{"name":"Google"},"position_in_text":[122,128]}},{"id":"a37edd56-d267-4a1f-aec8-4499a94e7990","label":"New York","node_type":"Entity","color":"#FF6B6B","shape":"ellipse","size":44.550000000000004,"x":-2250.0,"y":-200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"New York","entity_type":"Person","attributes":{"name":"New York"},"position_in_text":[131,139]}},{"id":"f5773c0b-83da-4870-b492-0fa1722294fd","label":"She","node_type":"Entity","color":"#FF6B6B","shape":"ellipse","size":44.550000000000004,"x":-1950.0,"y":-200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"She","entity_type":"Person","attributes":{"name":"She"},"position_in_text":[0,3]}},{"id":"239cff48-fc2b-46ed-851f-d29927dd7dcc","label":"David Chu","node_type":"Entity","color":"#FF6B6B","shape":"ellipse","size":44.550000000000004,"x":-1650.0,"y":-200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"David Chu","entity_type":"Person","attributes":{"name":"David Chu"},"position_in_text":[32,41]}},{"id":"98bb6182-bef2-43b4-bb9b-3ad416e3d7e1","label":"Their","node_type":"Entity","color":"#FF6B6B","shape":"ellipse","size":44.550000000000004,"x":-1350.0,"y":-200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"Their","entity_type":"Person","attributes":{"name":"Their"},"position_in_text":[0,5]}},{"id":"69c288a7-9126-4f38-aa86-5214638742ac","label":"Hudson Yards","node_type":"Entity","color":"#FF6B6B","shape":"ellipse","size":48.6,"x":-1050.0,"y":-200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"Hudson Yards","entity_type":"Person","attributes":{"name":"Hudson Yards","description":"complex developed by Related Companies and the Hudson Yards Development Corporation"},"position_in_text":[85,97]}},{"id":"d00137c5-1a9d-4a47-9afc-9dfbe3eff339","label":"description: complex developed by Related Companies and the Hudson Yards Development Corporation","node_type":"Attribute","color":"#FFA07A","shape":"diamond","size":20.0,"x":-150.0,"y":200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"complex developed by Related Companies and the Hudson Yards Development Corporation","entity_type":"Description","attributes":{"attribute_name":"description","parent_entity":"Hudson Yards"},"position_in_text":null}},{"id":"0544c7a9-b655-4128-bc5f-5622cb2f1884","label":"Related Companies","node_type":"Entity","color":"#FF6B6B","shape":"ellipse","size":44.550000000000004,"x":-750.0,"y":-200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"Related Companies","entity_type":"Person","attributes":{"name":"Related Companies"},"position_in_text":[122,139]}},{"id":"966a9dda-c6e2-4ea2-88bd-11daac51c5db","label":"Hudson Yards Development Corporation","node_type":"Entity","color":"#FF6B6B","shape":"ellipse","size":44.550000000000004,"x":-450.0,"y":-200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"Hudson Yards Development Corporation","entity_type":"Organization","attributes":{"name":"Hudson Yards Development Corporation"},"position_in_text":[148,184]}},{"id":"1046f84b-6e1c-4bd8-a220-ee59920ffdb1","label":"Rachel","node_type":"Entity","color":"#FF6B6B","shape":"ellipse","size":44.550000000000004,"x":-150.0,"y":-200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"Rachel","entity_type":"Person","attributes":{"name":"Rachel"},"position_in_text":[0,6]}},{"id":"5c6870e6-dbb0-4935-9fd7-a16db5b56df0","label":"Jonathan Gray","node_type":"Entity","color":"#FF6B6B","shape":"ellipse","size":48.6,"x":150.0,"y":-200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"Jonathan Gray","entity_type":"Person","attributes":{"description":"CEO of Related Companies","name":"Jonathan Gray"},"position_in_text":[34,47]}},{"id":"fb65d433-f42f-472f-8b8a-1abbc437446b","label":"description: CEO of Related Companies","node_type":"Attribute","color":"#FFA07A","shape":"diamond","size":20.0,"x":150.0,"y":200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"CEO of Related Companies","entity_type":"Description","attributes":{"parent_entity":"Jonathan Gray","attribute_name":"description"},"position_in_text":null}},{"id":"f5501a9b-e6ee-4753-ad77-7cde2717045a","label":"Times Square","node_type":"Entity","color":"#FF6B6B","shape":"ellipse","size":44.550000000000004,"x":450.0,"y":-200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"Times Square","entity_type":"Person","attributes":{"name":"Times Square"},"position_in_text":[123,135]}},{"id":"504141ad-6dbc-44fc-a444-7abeaff787aa","label":"project","node_type":"Entity","color":"#FF6B6B","shape":"ellipse","size":44.550000000000004,"x":750.0,"y":-200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"project","entity_type":"Other(\"project\")","attributes":{"name":"project"},"position_in_text":[84,91]}},{"id":"e2efcffc-4162-406f-94ef-4bb3197a63fd","label":"David","node_type":"Entity","color":"#FF6B6B","shape":"ellipse","size":44.550000000000004,"x":1050.0,"y":-200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"David","entity_type":"Person","attributes":{"name":"David"},"position_in_text":[23,28]}},{"id":"76ce10c4-194b-470d-8920-f2bf71adfa80","label":"Memorial Sloan Kettering Cancer Center","node_type":"Entity","color":"#FF6B6B","shape":"ellipse","size":44.550000000000004,"x":1350.0,"y":-200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"Memorial Sloan Kettering Cancer Center","entity_type":"Other(\"memorial sloan kettering cancer center\")","attributes":{"name":"Memorial Sloan Kettering Cancer Center"},"position_in_text":[177,215]}},{"id":"24bdb7d8-48cf-4486-842d-d78b843942d1","label":"Langone Medical Center","node_type":"Entity","color":"#FF6B6B","shape":"ellipse","size":48.6,"x":1650.0,"y":-200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"Langone Medical Center","entity_type":"Person","attributes":{"description":"NYU","name":"Langone Medical Center"},"position_in_text":[228,250]}},{"id":"53bf7374-0e7b-4bc5-a4f0-ab24b567d806","label":"description: NYU","node_type":"Attribute","color":"#FFA07A","shape":"diamond","size":20.0,"x":450.0,"y":200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"NYU","entity_type":"Description","attributes":{"attribute_name":"description","parent_entity":"Langone Medical Center"},"position_in_text":null}},{"id":"a5dd60c7-bec1-489f-86c2-eee1adea5a1c","label":"company","node_type":"Entity","color":"#FF6B6B","shape":"ellipse","size":44.550000000000004,"x":1950.0,"y":-200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"company","entity_type":"Organization","attributes":{"name":"company"},"position_in_text":[43,50]}},{"id":"ab45e2c8-9755-438a-909a-c9fdc52bb2eb","label":"Watson Health","node_type":"Entity","color":"#FF6B6B","shape":"ellipse","size":44.550000000000004,"x":2250.0,"y":-200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"Watson Health","entity_type":"Person","attributes":{"name":"Watson Health"},"position_in_text":[126,139]}},{"id":"ebf2b00f-3a0d-4682-b72e-92264d895976","label":"John Chambers","node_type":"Entity","color":"#FF6B6B","shape":"ellipse","size":44.550000000000004,"x":2550.0,"y":-200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"John Chambers","entity_type":"Person","attributes":{"name":"John Chambers"},"position_in_text":[60,73]}},{"id":"2f4370f0-b107-439c-89d9-aca4cda5852b","label":"Emagine","node_type":"Entity","color":"#FF6B6B","shape":"ellipse","size":44.550000000000004,"x":2850.0,"y":-200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"Emagine","entity_type":"Person","attributes":{"name":"Emagine"},"position_in_text":[86,93]}},{"id":"0f5bca6d-2b11-48b8-aa9e-20094f41caaa","label":"information","node_type":"Entity","color":"#FF6B6B","shape":"ellipse","size":44.550000000000004,"x":3150.0,"y":-200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"information","entity_type":"Other(\"information\")","attributes":{"name":"information"},"position_in_text":[102,113]}},{"id":"fec09868-ee9f-436c-980b-ba01937d0ac5","label":"Partnership between Google and WeWork","node_type":"Concept","color":"#45B7D1","shape":"circle","size":31.75,"x":-900.0,"y":0.0,"physics":true,"metadata":{"confidence":0.9,"original_text":"Partnership between Google and WeWork","entity_type":"concept","attributes":{"description":"Collaboration between tech giants Google and WeWork to expand services into healthcare sector","related_entities_count":"0"},"position_in_text":null}},{"id":"93efa5dc-f32c-4fc8-8e0f-e276826b55bd","label":"AI-powered health solutions","node_type":"Concept","color":"#45B7D1","shape":"circle","size":31.0,"x":-600.0,"y":0.0,"physics":true,"metadata":{"confidence":0.8,"original_text":"AI-powered health solutions","entity_type":"concept","attributes":{"related_entities_count":"0","description":"Development of AI-powered health solutions by Google and WeWork teams"},"position_in_text":null}},{"id":"98d6041e-0497-4095-a12f-f5f6718d0730","label":"Healthcare sector expansion","node_type":"Concept","color":"#45B7D1","shape":"circle","size":31.75,"x":-300.0,"y":0.0,"physics":true,"metadata":{"confidence":0.9,"original_text":"Healthcare sector expansion","entity_type":"concept","attributes":{"description":"WeWork's plans to expand into healthcare services through partnerships with medical research institutions","related_entities_count":"0"},"position_in_text":null}},{"id":"28f320ca-1adb-4255-822e-817e78723aff","label":"IPO investment and funding","node_type":"Concept","color":"#45B7D1","shape":"circle","size":31.0,"x":0.0,"y":0.0,"physics":true,"metadata":{"confidence":0.8,"original_text":"IPO investment and funding","entity_type":"concept","attributes":{"related_entities_count":"0","description":"Investment by John Chambers' company Emagine in WeWork's IPO and partnership with Google"},"position_in_text":null}},{"id":"a1f3e1f5-944e-459b-9c2d-059c4e7364f1","label":"Residential buildings and development projects","node_type":"Concept","color":"#45B7D1","shape":"circle","size":30.25,"x":300.0,"y":0.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"Residential buildings and development projects","entity_type":"concept","attributes":{"description":"WeLive residential building and Hudson Yards complex developed by Related Companies and the Hudson Yards Development Corporation","related_entities_count":"0"},"position_in_text":null}},{"id":"f0b01efe-5239-444d-9c57-76c45770ef9b","label":"Collaborative business approach","node_type":"Concept","color":"#45B7D1","shape":"circle","size":31.0,"x":600.0,"y":0.0,"physics":true,"metadata":{"confidence":0.8,"original_text":"Collaborative business approach","entity_type":"concept","attributes":{"related_entities_count":"0","description":"Sharing expertise and knowledge between Google, WeWork, and their respective teams to drive innovation"},"position_in_text":null}}],
+                edges: [{"id":"361c13fd-b78a-43c5-b376-4b10ff3f920e-5336e595-f430-4cbe-bab6-4ac675388a83","from":"361c13fd-b78a-43c5-b376-4b10ff3f920e","to":"5336e595-f430-4cbe-bab6-4ac675388a83","label":"has","color":"#888888","width":1.0,"arrows":"to","edge_type":"EntityAttribute","metadata":{"confidence":0.7,"relationship_type":"has_attribute","bidirectional":false,"weight":0.7}},{"id":"5ec15b6c-947e-41f3-b766-f078114edeff-691034f8-d770-4043-a345-4abae7c16f6e","from":"5ec15b6c-947e-41f3-b766-f078114edeff","to":"691034f8-d770-4043-a345-4abae7c16f6e","label":"has","color":"#888888","width":1.0,"arrows":"to","edge_type":"EntityAttribute","metadata":{"confidence":0.7,"relationship_type":"has_attribute","bidirectional":false,"weight":0.7}},{"id":"69c288a7-9126-4f38-aa86-5214638742ac-d00137c5-1a9d-4a47-9afc-9dfbe3eff339","from":"69c288a7-9126-4f38-aa86-5214638742ac","to":"d00137c5-1a9d-4a47-9afc-9dfbe3eff339","label":"has","color":"#888888","width":1.0,"arrows":"to","edge_type":"EntityAttribute","metadata":{"confidence":0.7,"relationship_type":"has_attribute","bidirectional":false,"weight":0.7}},{"id":"5c6870e6-dbb0-4935-9fd7-a16db5b56df0-fb65d433-f42f-472f-8b8a-1abbc437446b","from":"5c6870e6-dbb0-4935-9fd7-a16db5b56df0","to":"fb65d433-f42f-472f-8b8a-1abbc437446b","label":"has","color":"#888888","width":1.0,"arrows":"to","edge_type":"EntityAttribute","metadata":{"confidence":0.7,"relationship_type":"has_attribute","bidirectional":false,"weight":0.7}},{"id":"24bdb7d8-48cf-4486-842d-d78b843942d1-53bf7374-0e7b-4bc5-a4f0-ab24b567d806","from":"24bdb7d8-48cf-4486-842d-d78b843942d1","to":"53bf7374-0e7b-4bc5-a4f0-ab24b567d806","label":"has","color":"#888888","width":1.0,"arrows":"to","edge_type":"EntityAttribute","metadata":{"confidence":0.7,"relationship_type":"has_attribute","bidirectional":false,"weight":0.7}},{"id":"54e13e67-b998-4c61-8196-dd782a7ddab6","from":"5ec15b6c-947e-41f3-b766-f078114edeff","to":"239cff48-fc2b-46ed-851f-d29927dd7dcc","label":"collaboration","color":"#4ECDC4","width":2.8,"arrows":"to","edge_type":"EntityRelationship","metadata":{"confidence":0.9,"relationship_type":"Other(\"collaboration\")","bidirectional":false,"weight":0.9}},{"id":"1cbb07c0-08fb-46d3-8b50-14cfade1ecf5","from":"966a9dda-c6e2-4ea2-88bd-11daac51c5db","to":"0544c7a9-b655-4128-bc5f-5622cb2f1884","label":"co-developer","color":"#4ECDC4","width":2.6,"arrows":"to","edge_type":"EntityRelationship","metadata":{"confidence":0.8,"relationship_type":"Other(\"co-developer\")","bidirectional":false,"weight":0.8}},{"id":"5e25c399-52bf-4551-b5a9-96bfa975b204","from":"5c6870e6-dbb0-4935-9fd7-a16db5b56df0","to":"5ec15b6c-947e-41f3-b766-f078114edeff","label":"previous collaboration","color":"#4ECDC4","width":2.8,"arrows":"to","edge_type":"EntityRelationship","metadata":{"confidence":0.9,"relationship_type":"Other(\"previous collaboration\")","bidirectional":false,"weight":0.9}},{"id":"fec09868-ee9f-436c-980b-ba01937d0ac5-8ef51162-f88f-466e-9c75-328a9656f198","from":"fec09868-ee9f-436c-980b-ba01937d0ac5","to":"8ef51162-f88f-466e-9c75-328a9656f198","label":"relates to","color":"#CCCCCC","width":1.0,"arrows":"to","edge_type":"ConceptEntity","metadata":{"confidence":0.8,"relationship_type":"related_to","bidirectional":true,"weight":0.5}},{"id":"93efa5dc-f32c-4fc8-8e0f-e276826b55bd-8ef51162-f88f-466e-9c75-328a9656f198","from":"93efa5dc-f32c-4fc8-8e0f-e276826b55bd","to":"8ef51162-f88f-466e-9c75-328a9656f198","label":"relates to","color":"#CCCCCC","width":1.0,"arrows":"to","edge_type":"ConceptEntity","metadata":{"confidence":0.75,"relationship_type":"related_to","bidirectional":true,"weight":0.5}},{"id":"28f320ca-1adb-4255-822e-817e78723aff-8ef51162-f88f-466e-9c75-328a9656f198","from":"28f320ca-1adb-4255-822e-817e78723aff","to":"8ef51162-f88f-466e-9c75-328a9656f198","label":"relates to","color":"#CCCCCC","width":1.0,"arrows":"to","edge_type":"ConceptEntity","metadata":{"confidence":0.75,"relationship_type":"related_to","bidirectional":true,"weight":0.5}},{"id":"28f320ca-1adb-4255-822e-817e78723aff-a5dd60c7-bec1-489f-86c2-eee1adea5a1c","from":"28f320ca-1adb-4255-822e-817e78723aff","to":"a5dd60c7-bec1-489f-86c2-eee1adea5a1c","label":"relates to","color":"#CCCCCC","width":1.0,"arrows":"to","edge_type":"ConceptEntity","metadata":{"confidence":0.75,"relationship_type":"related_to","bidirectional":true,"weight":0.5}},{"id":"28f320ca-1adb-4255-822e-817e78723aff-ebf2b00f-3a0d-4682-b72e-92264d895976","from":"28f320ca-1adb-4255-822e-817e78723aff","to":"ebf2b00f-3a0d-4682-b72e-92264d895976","label":"relates to","color":"#CCCCCC","width":1.0,"arrows":"to","edge_type":"ConceptEntity","metadata":{"confidence":0.75,"relationship_type":"related_to","bidirectional":true,"weight":0.5}},{"id":"28f320ca-1adb-4255-822e-817e78723aff-2f4370f0-b107-439c-89d9-aca4cda5852b","from":"28f320ca-1adb-4255-822e-817e78723aff","to":"2f4370f0-b107-439c-89d9-aca4cda5852b","label":"relates to","color":"#CCCCCC","width":1.0,"arrows":"to","edge_type":"ConceptEntity","metadata":{"confidence":0.75,"relationship_type":"related_to","bidirectional":true,"weight":0.5}},{"id":"a1f3e1f5-944e-459b-9c2d-059c4e7364f1-69c288a7-9126-4f38-aa86-5214638742ac","from":"a1f3e1f5-944e-459b-9c2d-059c4e7364f1","to":"69c288a7-9126-4f38-aa86-5214638742ac","label":"relates to","color":"#CCCCCC","width":1.0,"arrows":"to","edge_type":"ConceptEntity","metadata":{"confidence":0.7,"relationship_type":"related_to","bidirectional":true,"weight":0.5}},{"id":"a1f3e1f5-944e-459b-9c2d-059c4e7364f1-0544c7a9-b655-4128-bc5f-5622cb2f1884","from":"a1f3e1f5-944e-459b-9c2d-059c4e7364f1","to":"0544c7a9-b655-4128-bc5f-5622cb2f1884","label":"relates to","color":"#CCCCCC","width":1.0,"arrows":"to","edge_type":"ConceptEntity","metadata":{"confidence":0.7,"relationship_type":"related_to","bidirectional":true,"weight":0.5}},{"id":"a1f3e1f5-944e-459b-9c2d-059c4e7364f1-966a9dda-c6e2-4ea2-88bd-11daac51c5db","from":"a1f3e1f5-944e-459b-9c2d-059c4e7364f1","to":"966a9dda-c6e2-4ea2-88bd-11daac51c5db","label":"relates to","color":"#CCCCCC","width":1.0,"arrows":"to","edge_type":"ConceptEntity","metadata":{"confidence":0.7,"relationship_type":"related_to","bidirectional":true,"weight":0.5}},{"id":"f0b01efe-5239-444d-9c57-76c45770ef9b-8ef51162-f88f-466e-9c75-328a9656f198","from":"f0b01efe-5239-444d-9c57-76c45770ef9b","to":"8ef51162-f88f-466e-9c75-328a9656f198","label":"relates to","color":"#CCCCCC","width":1.0,"arrows":"to","edge_type":"ConceptEntity","metadata":{"confidence":0.75,"relationship_type":"related_to","bidirectional":true,"weight":0.5}},{"id":"f0b01efe-5239-444d-9c57-76c45770ef9b-98bb6182-bef2-43b4-bb9b-3ad416e3d7e1","from":"f0b01efe-5239-444d-9c57-76c45770ef9b","to":"98bb6182-bef2-43b4-bb9b-3ad416e3d7e1","label":"relates to","color":"#CCCCCC","width":1.0,"arrows":"to","edge_type":"ConceptEntity","metadata":{"confidence":0.75,"relationship_type":"related_to","bidirectional":true,"weight":0.5}}],
+                config: {"node_colors":{"entity":"#FF6B6B","relationship":"#4ECDC4","concept":"#45B7D1","attribute":"#FFA07A"},"node_shapes":{"entity":"ellipse","relationship":"box","concept":"circle","attribute":"diamond"},"layout":{"algorithm":"hierarchical","spacing":300.0,"hierarchical":true},"physics":{"enabled":true,"stabilization":true,"repulsion":250.0,"spring_length":200.0,"spring_constant":0.05},"extraction":{"use_llm":true,"llm_model":"llama3.2","llm_endpoint":"http://localhost:11434/api/generate","entity_patterns":["\\b[A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*\\b","\\b(?:person|people|individual|user|customer|client|organization|company|institution)\\b","\\b(?:system|application|platform|service|tool|software)\\b","\\b(?:project|initiative|program|process|procedure)\\b","\\b(?:data|information|knowledge|resource|asset)\\b","\\b(?:Dr\\.|Mr\\.|Ms\\.|Mrs\\.|Prof\\.|CEO|CTO|Manager|Director)\\s+[A-Z][a-z]+\\b"],"relationship_patterns":["\\b(?:has|have|is|are|was|were|contains|includes|owns|belongs|manages|controls)\\b","\\b(?:connected to|related to|associated with|linked to|depends on|uses|utilizes)\\b","\\b(?:creates|develops|builds|designs|implements|maintains|supports)\\b","\\b(?:reports to|works with|collaborates with|partners with|communicates with)\\b","\\b(?:leads|directs|supervises|coordinates|oversees|administers)\\b","\\b(?:influences|impacts|affects|drives|enables|facilitates)\\b"],"concept_patterns":["\\b(?:concept|idea|principle|theory|methodology|approach|strategy)\\b","\\b(?:goal|objective|target|aim|purpose|mission|vision)\\b","\\b(?:requirement|specification|standard|guideline|policy|rule)\\b","\\b(?:technology|framework|architecture|infrastructure|platform)\\b","\\b(?:process|workflow|procedure|method|technique|practice)\\b","\\b(?:quality|performance|efficiency|effectiveness|productivity)\\b","\\b(?:innovation|transformation|improvement|optimization|enhancement)\\b"]}}
+            };
+            
+            // Initialize the graph when page loads
+            window.addEventListener('load', function() {
+                initializeGraph();
+            });
+            
+            function initializeGraph() {
+                // Sync physics enabled state with config
+                physicsEnabled = window.graphData.config.physics.enabled;
+                
+                const container = document.getElementById('export-container');
+                const nodes = new vis.DataSet(window.graphData.nodes.map(node => ({
+                    id: node.id,
+                    label: node.label,
+                    originalLabel: node.label, // Store original label for toggle functionality
+                    color: node.color,
+                    shape: node.shape,
+                    size: node.size,
+                    x: node.x,
+                    y: node.y,
+                    physics: node.physics,
+                    title: `Type: ${node.node_type}<br/>Confidence: ${node.metadata.confidence.toFixed(2)}`,
+                    group: node.node_type.toLowerCase(),
+                    node_type: node.node_type,
+                    confidence: node.metadata.confidence
+                })));
+                
+                const edges = new vis.DataSet(window.graphData.edges.map(edge => ({
+                    id: edge.id,
+                    from: edge.from,
+                    to: edge.to,
+                    label: edge.label,
+                    originalLabel: edge.label, // Store original label for toggle functionality
+                    color: edge.color,
+                    width: edge.width,
+                    arrows: edge.arrows,
+                    title: `Type: ${edge.metadata.relationship_type}<br/>Confidence: ${edge.metadata.confidence.toFixed(2)}`,
+                    smooth: { type: "continuous" },
+                    relationship_type: edge.metadata.relationship_type
+                })));
+                
+                // Store original data globally for filtering and label toggling
+                originalNodes = nodes.get();
+                originalEdges = edges.get();
+                
+                const data = { nodes: nodes, edges: edges };
+                
+                const options = {
+                    nodes: {
+                        shape: 'dot',
+                        size: 25,
+                        font: {
+                            size: 14,
+                            color: '#343434',
+                            face: 'arial'
+                        },
+                        borderWidth: 2,
+                        shadow: true
+                    },
+                    edges: {
+                        width: 2,
+                        arrows: {
+                            to: {
+                                enabled: true,
+                                scaleFactor: 1
+                            }
+                        },
+                        smooth: true,
+                        shadow: true
+                    },
+                    physics: {
+                        enabled: window.graphData.config.physics.enabled,
+                        stabilization: {
+                            enabled: window.graphData.config.physics.stabilization,
+                            iterations: 1000
+                        },
+                        repulsion: {
+                            nodeDistance: window.graphData.config.physics.repulsion,
+                            centralGravity: 0.1,
+                            springLength: window.graphData.config.physics.spring_length,
+                            springConstant: window.graphData.config.physics.spring_constant
+                        }
+                    },
+                    interaction: {
+                        dragNodes: true,
+                        dragView: true,
+                        zoomView: true,
+                        selectConnectedEdges: true,
+                        hover: true
+                    }
+                };
+                
+                // Assign to the global variable (not window.currentNetwork)
+                currentNetwork = new vis.Network(container, data, options);
+                
+                // Set up event listeners
+                currentNetwork.on('selectNode', function(params) {
+                    onNodeSelected(params.nodes[0]);
+                });
+                
+                currentNetwork.on('selectEdge', function(params) {
+                    onEdgeSelected(params.edges[0]);
+                });
+                
+                // Initialize toggle button states
+                updateToggleButton('physicsToggle', physicsEnabled, 'Physics: ON', 'Physics: OFF');
+                updateToggleButton('nodeLabelsToggle', showNodeLabels, 'Node Labels: ON', 'Node Labels: OFF');
+                updateToggleButton('edgeLabelsToggle', showEdgeLabels, 'Edge Labels: ON', 'Edge Labels: OFF');
+                
+                console.log('Graph initialized successfully');
+            }
+        </script>
+        
+</body>
+</html>
+        
