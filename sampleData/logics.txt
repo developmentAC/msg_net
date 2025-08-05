@@ -1,6 +1,0 @@
-A is related to B
-B is related to C
-C is related to B
-D is related to B
-E is related to B
-
