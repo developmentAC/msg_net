@@ -6,6 +6,8 @@
 # Rust project #
 ################
 target/
+0_networks/
+sampleData/
 
 # bash #
 ########
