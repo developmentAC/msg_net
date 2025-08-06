@@ -317,6 +317,10 @@
                             <button id="nodeLabelsToggle" class="toggle-on" onclick="toggleNodeLabels()">Node Labels: ON</button>
                             <button id="edgeLabelsToggle" class="toggle-on" onclick="toggleEdgeLabels()">Edge Labels: ON</button>
                         </div>
+                        <div class="control-group">
+                            <label>Node Uniqueness:</label>
+                            <button id="uniqueNodesToggle" class="toggle-on" onclick="toggleUniqueNodes()">Unique Nodes: ON</button>
+                        </div>
                     </div>
                 </div>
                 
@@ -385,6 +389,7 @@
         let physicsEnabled = true;
         let sidePanelOpen = true;
         let infoPanelOpen = true;
+        let uniqueNodesEnabled = true;
         
         // Side panel and section controls
         function toggleSidePanel() {
@@ -595,6 +600,81 @@
             }
         }
         
+        // Node uniqueness control function
+        function toggleUniqueNodes() {
+            if (currentNetwork && originalNodes && originalEdges) {
+                uniqueNodesEnabled = !uniqueNodesEnabled;
+                
+                let nodesToDisplay = [];
+                let edgesToDisplay = [];
+                
+                if (uniqueNodesEnabled) {
+                    // Show all unique nodes (original behavior)
+                    nodesToDisplay = originalNodes.map(node => ({
+                        ...node,
+                        label: showNodeLabels ? node.originalLabel || node.label : ''
+                    }));
+                    edgesToDisplay = originalEdges.map(edge => ({
+                        ...edge,
+                        label: showEdgeLabels ? edge.originalLabel || edge.label : ''
+                    }));
+                } else {
+                    // Consolidate nodes by label/name, but preserve all edges
+                    const nodeMap = new Map();
+                    const consolidatedNodes = [];
+                    
+                    // Group nodes by their original label to identify duplicates
+                    originalNodes.forEach(node => {
+                        const key = (node.originalLabel || node.label).toLowerCase().trim();
+                        if (!nodeMap.has(key)) {
+                            nodeMap.set(key, {
+                                ...node,
+                                label: showNodeLabels ? node.originalLabel || node.label : '',
+                                consolidatedIds: [node.id] // Track all IDs this consolidated node represents
+                            });
+                            consolidatedNodes.push(nodeMap.get(key));
+                        } else {
+                            // Add this node's ID to the consolidated node's ID list
+                            nodeMap.get(key).consolidatedIds.push(node.id);
+                        }
+                    });
+                    
+                    nodesToDisplay = consolidatedNodes;
+                    
+                    // Update edges to point to consolidated nodes
+                    edgesToDisplay = originalEdges.map(edge => {
+                        let fromId = edge.from;
+                        let toId = edge.to;
+                        
+                        // Find consolidated nodes for from and to
+                        for (const [key, consolidatedNode] of nodeMap) {
+                            if (consolidatedNode.consolidatedIds.includes(edge.from)) {
+                                fromId = consolidatedNode.id;
+                            }
+                            if (consolidatedNode.consolidatedIds.includes(edge.to)) {
+                                toId = consolidatedNode.id;
+                            }
+                        }
+                        
+                        return {
+                            ...edge,
+                            from: fromId,
+                            to: toId,
+                            label: showEdgeLabels ? edge.originalLabel || edge.label : ''
+                        };
+                    }).filter(edge => edge.from !== edge.to); // Remove self-loops that might be created
+                }
+                
+                currentNetwork.setData({
+                    nodes: nodesToDisplay,
+                    edges: edgesToDisplay
+                });
+                
+                updateToggleButton('uniqueNodesToggle', uniqueNodesEnabled, 'Unique Nodes: ON', 'Unique Nodes: OFF');
+                console.log('Unique nodes:', uniqueNodesEnabled ? 'enabled' : 'disabled (consolidated)');
+            }
+        }
+        
         // Node filtering function
         function filterNodes(nodeType) {
             if (currentNetwork && originalNodes) {
@@ -691,8 +771,8 @@
         <script>
             // Graph data embedded directly in HTML
             window.graphData = {
-                nodes: [{"id":"1cfbb099-0a4b-49a4-8df6-1345e7865d2b","label":"Alice","node_type":"Entity","color":"#FF6B6B","shape":"ellipse","size":44.550000000000004,"x":-1300.0,"y":-200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"Alice","entity_type":"Person","attributes":{"name":"Alice"},"position_in_text":[0,5]}},{"id":"906f4966-be97-4896-b4f6-8fde11c8bd98","label":"She","node_type":"Entity","color":"#FF6B6B","shape":"ellipse","size":44.550000000000004,"x":-1100.0,"y":-200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"She","entity_type":"Person","attributes":{"name":"She"},"position_in_text":[0,3]}},{"id":"15b2c716-9bc1-4b8a-8fe8-276aae71b547","label":"customer","node_type":"Entity","color":"#FF6B6B","shape":"ellipse","size":44.550000000000004,"x":-900.0,"y":-200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"customer","entity_type":"Other(\"customer\")","attributes":{"name":"customer"},"position_in_text":[81,89]}},{"id":"51773127-acb0-4883-95f7-303c90d45e75","label":"The","node_type":"Entity","color":"#FF6B6B","shape":"ellipse","size":44.550000000000004,"x":-700.0,"y":-200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"The","entity_type":"Person","attributes":{"name":"The"},"position_in_text":[0,3]}},{"id":"136f05dc-e38b-46d7-a756-b013f12d843d","label":"user","node_type":"Entity","color":"#FF6B6B","shape":"ellipse","size":44.550000000000004,"x":-500.0,"y":-200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"user","entity_type":"Other(\"user\")","attributes":{"name":"user"},"position_in_text":[57,61]}},{"id":"bbd53867-6e9d-46e5-a8c2-33a043e57a53","label":"Bob","node_type":"Entity","color":"#FF6B6B","shape":"ellipse","size":44.550000000000004,"x":-300.0,"y":-200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"Bob","entity_type":"Person","attributes":{"name":"Bob"},"position_in_text":[0,3]}},{"id":"e84747cb-6247-4f50-9f9f-90941b950b7b","label":"This","node_type":"Entity","color":"#FF6B6B","shape":"ellipse","size":44.550000000000004,"x":-100.0,"y":-200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"This","entity_type":"Person","attributes":{"name":"This"},"position_in_text":[0,4]}},{"id":"22348349-9b27-4435-9aa9-32a5aa78cc25","label":"Each","node_type":"Entity","color":"#FF6B6B","shape":"ellipse","size":44.550000000000004,"x":100.0,"y":-200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"Each","entity_type":"Person","attributes":{"name":"Each"},"position_in_text":[0,4]}},{"id":"0d6f43dd-6cf6-4aaa-91d1-25e43206c7a9","label":"client","node_type":"Entity","color":"#FF6B6B","shape":"ellipse","size":44.550000000000004,"x":300.0,"y":-200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"client","entity_type":"Other(\"client\")","attributes":{"name":"client"},"position_in_text":[5,11]}},{"id":"fe08db47-27d4-4965-acac-79e97e28e0dd","label":"These","node_type":"Entity","color":"#FF6B6B","shape":"ellipse","size":44.550000000000004,"x":500.0,"y":-200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"These","entity_type":"Person","attributes":{"name":"These"},"position_in_text":[0,5]}},{"id":"75ab873d-45b4-4386-acea-bba943bf0a35","label":"Carol","node_type":"Entity","color":"#FF6B6B","shape":"ellipse","size":44.550000000000004,"x":700.0,"y":-200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"Carol","entity_type":"Person","attributes":{"name":"Carol"},"position_in_text":[29,34]}},{"id":"27a46b0d-0102-434b-9bd4-97f4d2303cdc","label":"They","node_type":"Entity","color":"#FF6B6B","shape":"ellipse","size":44.550000000000004,"x":900.0,"y":-200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"They","entity_type":"Person","attributes":{"name":"They"},"position_in_text":[0,4]}},{"id":"d2d168ec-7568-415f-b59e-5077472e0766","label":"Regular","node_type":"Entity","color":"#FF6B6B","shape":"ellipse","size":44.550000000000004,"x":1100.0,"y":-200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"Regular","entity_type":"Person","attributes":{"name":"Regular"},"position_in_text":[0,7]}},{"id":"369bb842-9302-43cc-86c8-22b13c7f765f","label":"system","node_type":"Concept","color":"#45B7D1","shape":"circle","size":29.5,"x":-200.0,"y":0.0,"physics":true,"metadata":{"confidence":0.6,"original_text":"system","entity_type":"concept","attributes":{"description":"Concept 'system' mentioned in context: Bob, who is Alice s colleague, manages the database system that stores all the customer information","related_entities_count":"0"},"position_in_text":[52,58]}},{"id":"d9efa61d-921e-417c-b4d6-f93eb92e536c","label":"process","node_type":"Concept","color":"#45B7D1","shape":"circle","size":29.5,"x":0.0,"y":0.0,"physics":true,"metadata":{"confidence":0.6,"original_text":"process","entity_type":"concept","attributes":{"related_entities_count":"0","description":"Concept 'process' mentioned in context: TechCorp uses advanced analytics to process the customer data"},"position_in_text":[36,43]}}],
-                edges: [{"id":"92e407ee-02a6-4a12-b24e-433774ed62df","from":"906f4966-be97-4896-b4f6-8fde11c8bd98","to":"15b2c716-9bc1-4b8a-8fe8-276aae71b547","label":"She is a customer","color":"#4ECDC4","width":2.2,"arrows":"to","edge_type":"EntityRelationship","metadata":{"confidence":0.6,"relationship_type":"IsA","bidirectional":false,"weight":0.6}},{"id":"f87518a4-28dd-4416-b2cb-cfd2fdd6c46d","from":"51773127-acb0-4883-95f7-303c90d45e75","to":"136f05dc-e38b-46d7-a756-b013f12d843d","label":"The has user","color":"#4ECDC4","width":2.2,"arrows":"to","edge_type":"EntityRelationship","metadata":{"confidence":0.6,"relationship_type":"Has","bidirectional":false,"weight":0.6}},{"id":"369bb842-9302-43cc-86c8-22b13c7f765f-51773127-acb0-4883-95f7-303c90d45e75","from":"369bb842-9302-43cc-86c8-22b13c7f765f","to":"51773127-acb0-4883-95f7-303c90d45e75","label":"relates to","color":"#CCCCCC","width":1.0,"arrows":"to","edge_type":"ConceptEntity","metadata":{"confidence":0.6499999999999999,"relationship_type":"related_to","bidirectional":true,"weight":0.5}},{"id":"369bb842-9302-43cc-86c8-22b13c7f765f-136f05dc-e38b-46d7-a756-b013f12d843d","from":"369bb842-9302-43cc-86c8-22b13c7f765f","to":"136f05dc-e38b-46d7-a756-b013f12d843d","label":"relates to","color":"#CCCCCC","width":1.0,"arrows":"to","edge_type":"ConceptEntity","metadata":{"confidence":0.6499999999999999,"relationship_type":"related_to","bidirectional":true,"weight":0.5}},{"id":"369bb842-9302-43cc-86c8-22b13c7f765f-bbd53867-6e9d-46e5-a8c2-33a043e57a53","from":"369bb842-9302-43cc-86c8-22b13c7f765f","to":"bbd53867-6e9d-46e5-a8c2-33a043e57a53","label":"relates to","color":"#CCCCCC","width":1.0,"arrows":"to","edge_type":"ConceptEntity","metadata":{"confidence":0.6499999999999999,"relationship_type":"related_to","bidirectional":true,"weight":0.5}}],
+                nodes: [{"id":"6efdd36d-9a7d-4390-b0f2-eda7b716c4e4","label":"Alice","node_type":"Entity","color":"#FF6B6B","shape":"ellipse","size":44.550000000000004,"x":-1300.0,"y":-200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"Alice","entity_type":"Person","attributes":{"name":"Alice"},"position_in_text":[0,5]}},{"id":"e3bf7591-e51e-45e0-a47c-08f20a496bd1","label":"She","node_type":"Entity","color":"#FF6B6B","shape":"ellipse","size":44.550000000000004,"x":-1100.0,"y":-200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"She","entity_type":"Person","attributes":{"name":"She"},"position_in_text":[0,3]}},{"id":"3cc3b39e-ea24-4419-9b2d-a72dfec8b004","label":"customer","node_type":"Entity","color":"#FF6B6B","shape":"ellipse","size":44.550000000000004,"x":-900.0,"y":-200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"customer","entity_type":"Other(\"customer\")","attributes":{"name":"customer"},"position_in_text":[81,89]}},{"id":"7b3001f7-049c-4d87-a0d9-3fc0b12172c7","label":"The","node_type":"Entity","color":"#FF6B6B","shape":"ellipse","size":44.550000000000004,"x":-700.0,"y":-200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"The","entity_type":"Person","attributes":{"name":"The"},"position_in_text":[0,3]}},{"id":"0d0e393d-287e-413b-a825-680b5d9f270c","label":"user","node_type":"Entity","color":"#FF6B6B","shape":"ellipse","size":44.550000000000004,"x":-500.0,"y":-200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"user","entity_type":"Other(\"user\")","attributes":{"name":"user"},"position_in_text":[57,61]}},{"id":"236fdfba-ee0f-4fd2-9e10-dabbc046d7f5","label":"Bob","node_type":"Entity","color":"#FF6B6B","shape":"ellipse","size":44.550000000000004,"x":-300.0,"y":-200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"Bob","entity_type":"Person","attributes":{"name":"Bob"},"position_in_text":[0,3]}},{"id":"526ee0a5-b5a0-429f-b097-dce929ac1b45","label":"This","node_type":"Entity","color":"#FF6B6B","shape":"ellipse","size":44.550000000000004,"x":-100.0,"y":-200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"This","entity_type":"Person","attributes":{"name":"This"},"position_in_text":[0,4]}},{"id":"a19a4ecd-db88-4d40-a549-84f3359b3edf","label":"Each","node_type":"Entity","color":"#FF6B6B","shape":"ellipse","size":44.550000000000004,"x":100.0,"y":-200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"Each","entity_type":"Person","attributes":{"name":"Each"},"position_in_text":[0,4]}},{"id":"1cb1d343-5aab-4a63-ac0f-9fc41147e765","label":"client","node_type":"Entity","color":"#FF6B6B","shape":"ellipse","size":44.550000000000004,"x":300.0,"y":-200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"client","entity_type":"Other(\"client\")","attributes":{"name":"client"},"position_in_text":[5,11]}},{"id":"5fd0d375-10cf-4a7c-a2f1-dccfaf103e98","label":"These","node_type":"Entity","color":"#FF6B6B","shape":"ellipse","size":44.550000000000004,"x":500.0,"y":-200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"These","entity_type":"Person","attributes":{"name":"These"},"position_in_text":[0,5]}},{"id":"8e0499e7-5d80-4e4b-8005-5e566b44fc74","label":"Carol","node_type":"Entity","color":"#FF6B6B","shape":"ellipse","size":44.550000000000004,"x":700.0,"y":-200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"Carol","entity_type":"Person","attributes":{"name":"Carol"},"position_in_text":[29,34]}},{"id":"8d79ff61-7de7-473c-bddb-478f602ca6d6","label":"They","node_type":"Entity","color":"#FF6B6B","shape":"ellipse","size":44.550000000000004,"x":900.0,"y":-200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"They","entity_type":"Person","attributes":{"name":"They"},"position_in_text":[0,4]}},{"id":"d1f387c2-8213-4c45-a919-83e5d0d9c4d9","label":"Regular","node_type":"Entity","color":"#FF6B6B","shape":"ellipse","size":44.550000000000004,"x":1100.0,"y":-200.0,"physics":true,"metadata":{"confidence":0.7,"original_text":"Regular","entity_type":"Person","attributes":{"name":"Regular"},"position_in_text":[0,7]}},{"id":"29e6fdec-e438-4a0c-be5d-b522335f503d","label":"system","node_type":"Concept","color":"#45B7D1","shape":"circle","size":29.5,"x":-200.0,"y":0.0,"physics":true,"metadata":{"confidence":0.6,"original_text":"system","entity_type":"concept","attributes":{"description":"Concept 'system' mentioned in context: Bob, who is Alice s colleague, manages the database system that stores all the customer information","related_entities_count":"0"},"position_in_text":[52,58]}},{"id":"21ebc130-dbe7-44dc-b04e-c8e8b1c724c2","label":"process","node_type":"Concept","color":"#45B7D1","shape":"circle","size":29.5,"x":0.0,"y":0.0,"physics":true,"metadata":{"confidence":0.6,"original_text":"process","entity_type":"concept","attributes":{"description":"Concept 'process' mentioned in context: TechCorp uses advanced analytics to process the customer data","related_entities_count":"0"},"position_in_text":[36,43]}}],
+                edges: [{"id":"4fff2be3-0f9a-4d1a-b1bc-51222a895ed3","from":"e3bf7591-e51e-45e0-a47c-08f20a496bd1","to":"3cc3b39e-ea24-4419-9b2d-a72dfec8b004","label":"She is a customer","color":"#4ECDC4","width":2.2,"arrows":"to","edge_type":"EntityRelationship","metadata":{"confidence":0.6,"relationship_type":"IsA","bidirectional":false,"weight":0.6}},{"id":"7826d3de-fe45-4068-876c-02c56652f9b0","from":"7b3001f7-049c-4d87-a0d9-3fc0b12172c7","to":"0d0e393d-287e-413b-a825-680b5d9f270c","label":"The has user","color":"#4ECDC4","width":2.2,"arrows":"to","edge_type":"EntityRelationship","metadata":{"confidence":0.6,"relationship_type":"Has","bidirectional":false,"weight":0.6}},{"id":"29e6fdec-e438-4a0c-be5d-b522335f503d-7b3001f7-049c-4d87-a0d9-3fc0b12172c7","from":"29e6fdec-e438-4a0c-be5d-b522335f503d","to":"7b3001f7-049c-4d87-a0d9-3fc0b12172c7","label":"relates to","color":"#CCCCCC","width":1.0,"arrows":"to","edge_type":"ConceptEntity","metadata":{"confidence":0.6499999999999999,"relationship_type":"related_to","bidirectional":true,"weight":0.5}},{"id":"29e6fdec-e438-4a0c-be5d-b522335f503d-0d0e393d-287e-413b-a825-680b5d9f270c","from":"29e6fdec-e438-4a0c-be5d-b522335f503d","to":"0d0e393d-287e-413b-a825-680b5d9f270c","label":"relates to","color":"#CCCCCC","width":1.0,"arrows":"to","edge_type":"ConceptEntity","metadata":{"confidence":0.6499999999999999,"relationship_type":"related_to","bidirectional":true,"weight":0.5}},{"id":"29e6fdec-e438-4a0c-be5d-b522335f503d-236fdfba-ee0f-4fd2-9e10-dabbc046d7f5","from":"29e6fdec-e438-4a0c-be5d-b522335f503d","to":"236fdfba-ee0f-4fd2-9e10-dabbc046d7f5","label":"relates to","color":"#CCCCCC","width":1.0,"arrows":"to","edge_type":"ConceptEntity","metadata":{"confidence":0.6499999999999999,"relationship_type":"related_to","bidirectional":true,"weight":0.5}}],
                 config: {"node_colors":{"entity":"#FF6B6B","relationship":"#4ECDC4","concept":"#45B7D1","attribute":"#FFA07A"},"node_shapes":{"entity":"ellipse","relationship":"box","concept":"circle","attribute":"diamond"},"layout":{"algorithm":"hierarchical","spacing":200.0,"hierarchical":true},"physics":{"enabled":true,"stabilization":true,"repulsion":200.0,"spring_length":150.0,"spring_constant":0.04},"extraction":{"use_llm":false,"llm_model":"llama3.2","llm_endpoint":"http://localhost:11434/api/generate","entity_patterns":["\\b[A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*\\b","\\b(?:person|people|individual|user|customer|client)\\b"],"relationship_patterns":["\\b(?:has|have|is|are|was|were|contains|includes|owns|belongs)\\b","\\b(?:connected to|related to|associated with|linked to)\\b"],"concept_patterns":["\\b(?:concept|idea|principle|theory|method|approach|strategy)\\b","\\b(?:system|process|workflow|procedure|protocol)\\b"]}}
             };
             
@@ -803,6 +883,7 @@
                 updateToggleButton('physicsToggle', physicsEnabled, 'Physics: ON', 'Physics: OFF');
                 updateToggleButton('nodeLabelsToggle', showNodeLabels, 'Node Labels: ON', 'Node Labels: OFF');
                 updateToggleButton('edgeLabelsToggle', showEdgeLabels, 'Edge Labels: ON', 'Edge Labels: OFF');
+                updateToggleButton('uniqueNodesToggle', uniqueNodesEnabled, 'Unique Nodes: ON', 'Unique Nodes: OFF');
                 
                 console.log('Graph initialized successfully');
             }

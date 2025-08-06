@@ -550,6 +550,10 @@ impl WebInterface {
                             <button id="nodeLabelsToggle" class="toggle-on" onclick="toggleNodeLabels()">Node Labels: ON</button>
                             <button id="edgeLabelsToggle" class="toggle-on" onclick="toggleEdgeLabels()">Edge Labels: ON</button>
                         </div>
+                        <div class="control-group">
+                            <label>Node Uniqueness:</label>
+                            <button id="uniqueNodesToggle" class="toggle-on" onclick="toggleUniqueNodes()">Unique Nodes: ON</button>
+                        </div>
                     </div>
                 </div>
                 
@@ -618,6 +622,7 @@ impl WebInterface {
         let physicsEnabled = true;
         let sidePanelOpen = true;
         let infoPanelOpen = true;
+        let uniqueNodesEnabled = true;
         
         // Side panel and section controls
         function toggleSidePanel() {{
@@ -825,6 +830,81 @@ impl WebInterface {
                 }});
                 updateToggleButton('edgeLabelsToggle', showEdgeLabels, 'Edge Labels: ON', 'Edge Labels: OFF');
                 console.log('Edge labels:', showEdgeLabels ? 'shown' : 'hidden');
+            }}
+        }}
+        
+        // Node uniqueness control function
+        function toggleUniqueNodes() {{
+            if (currentNetwork && originalNodes && originalEdges) {{
+                uniqueNodesEnabled = !uniqueNodesEnabled;
+                
+                let nodesToDisplay = [];
+                let edgesToDisplay = [];
+                
+                if (uniqueNodesEnabled) {{
+                    // Show all unique nodes (original behavior)
+                    nodesToDisplay = originalNodes.map(node => ({{
+                        ...node,
+                        label: showNodeLabels ? node.originalLabel || node.label : ''
+                    }}));
+                    edgesToDisplay = originalEdges.map(edge => ({{
+                        ...edge,
+                        label: showEdgeLabels ? edge.originalLabel || edge.label : ''
+                    }}));
+                }} else {{
+                    // Consolidate nodes by label/name, but preserve all edges
+                    const nodeMap = new Map();
+                    const consolidatedNodes = [];
+                    
+                    // Group nodes by their original label to identify duplicates
+                    originalNodes.forEach(node => {{
+                        const key = (node.originalLabel || node.label).toLowerCase().trim();
+                        if (!nodeMap.has(key)) {{
+                            nodeMap.set(key, {{
+                                ...node,
+                                label: showNodeLabels ? node.originalLabel || node.label : '',
+                                consolidatedIds: [node.id] // Track all IDs this consolidated node represents
+                            }});
+                            consolidatedNodes.push(nodeMap.get(key));
+                        }} else {{
+                            // Add this node's ID to the consolidated node's ID list
+                            nodeMap.get(key).consolidatedIds.push(node.id);
+                        }}
+                    }});
+                    
+                    nodesToDisplay = consolidatedNodes;
+                    
+                    // Update edges to point to consolidated nodes
+                    edgesToDisplay = originalEdges.map(edge => {{
+                        let fromId = edge.from;
+                        let toId = edge.to;
+                        
+                        // Find consolidated nodes for from and to
+                        for (const [key, consolidatedNode] of nodeMap) {{
+                            if (consolidatedNode.consolidatedIds.includes(edge.from)) {{
+                                fromId = consolidatedNode.id;
+                            }}
+                            if (consolidatedNode.consolidatedIds.includes(edge.to)) {{
+                                toId = consolidatedNode.id;
+                            }}
+                        }}
+                        
+                        return {{
+                            ...edge,
+                            from: fromId,
+                            to: toId,
+                            label: showEdgeLabels ? edge.originalLabel || edge.label : ''
+                        }};
+                    }}).filter(edge => edge.from !== edge.to); // Remove self-loops that might be created
+                }}
+                
+                currentNetwork.setData({{
+                    nodes: nodesToDisplay,
+                    edges: edgesToDisplay
+                }});
+                
+                updateToggleButton('uniqueNodesToggle', uniqueNodesEnabled, 'Unique Nodes: ON', 'Unique Nodes: OFF');
+                console.log('Unique nodes:', uniqueNodesEnabled ? 'enabled' : 'disabled (consolidated)');
             }}
         }}
         

@@ -232,6 +232,7 @@ impl GraphExporter {
                 updateToggleButton('physicsToggle', physicsEnabled, 'Physics: ON', 'Physics: OFF');
                 updateToggleButton('nodeLabelsToggle', showNodeLabels, 'Node Labels: ON', 'Node Labels: OFF');
                 updateToggleButton('edgeLabelsToggle', showEdgeLabels, 'Edge Labels: ON', 'Edge Labels: OFF');
+                updateToggleButton('uniqueNodesToggle', uniqueNodesEnabled, 'Unique Nodes: ON', 'Unique Nodes: OFF');
                 
                 console.log('Graph initialized successfully');
             }}

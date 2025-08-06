@@ -540,6 +540,15 @@ The generated HTML graphs include a comprehensive set of interactive controls an
 - **By Confidence**: Filter based on extraction confidence
 - **By Connection**: Highlight connected components
 
+### Label and Node Controls
+
+- **Node Labels**: Toggle visibility of node labels
+- **Edge Labels**: Toggle visibility of edge labels
+- **Node Uniqueness**: Toggle between unique nodes and consolidated nodes
+  - **Unique Nodes ON**: All nodes are displayed as extracted (default behavior)
+  - **Unique Nodes OFF**: Nodes with the same label are consolidated into single nodes
+  - All edges are preserved in both modes
+
 ## Architecture
 
 ### Module Structure
