@@ -11,7 +11,7 @@ use std::fs;
 
 #[derive(Parser)]
 #[command(name = "msg_net")]
-#[command(about = "Entity Relationship Graph Visualizer - Convert text into interactive network graphs")]
+#[command(about = "\t Entity Relationship Graph Visualizer - Convert text into interactive network graphs")]
 #[command(version = "0.1.0")]
 struct Cli {
     #[command(subcommand)]
@@ -116,8 +116,47 @@ enum Commands {
     BigHelp,
 }
 
+
+// use colored::Colorize;
+
+mod toml_extract; // Extract and print the version information according to the toml file
+
+// Function to display the banner
+fn show_banner() {
+    let banner = String::from(
+        "\n
+\t 
+\t ███╗   ███╗   ███████╗    ██████╗    
+\t ████╗ ████║   ██╔════╝   ██╔════╝    
+\t ██╔████╔██║   ███████╗   ██║  ███╗   
+\t ██║╚██╔╝██║   ╚════██║   ██║   ██║   
+\t ██║ ╚═╝ ██║   ███████║   ╚██████╔╝   
+\t ╚═╝     ╚═╝   ╚══════╝    ╚═════╝    
+\t 
+\t ███╗   ██╗   ███████╗   ████████╗   
+\t ████╗  ██║   ██╔════╝   ╚══██╔══╝   
+\t ██╔██╗ ██║   █████╗        ██║      
+\t ██║╚██╗██║   ██╔══╝        ██║      
+\t ██║ ╚████║   ███████╗      ██║      
+\t ╚═╝  ╚═══╝   ╚══════╝      ╚═╝      
+
+",
+    );
+
+    // Print the banner in purple color
+    toml_extract::colour_print(&banner, "cyan");
+}
+
+
+
 #[tokio::main]
 async fn main() -> Result<()> {
+    // Show the banner
+    show_banner();
+
+    // Display version information from the toml file
+    toml_extract::main();
+
     let cli = Cli::parse();
 
     match cli.command {

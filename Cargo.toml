@@ -1,6 +1,6 @@
 [package]
 name = "msg_net"
-version = "0.9.0"
+version = "0.11.0"
 edition = "2021"
 
 [dependencies]
@@ -14,6 +14,12 @@ clap = { version = "4.0", features = ["derive"] }
 thiserror = "1.0"
 anyhow = "1.0"
 chrono = { version = "0.4", features = ["serde"] }
+
+# add some color to the output
+colored = "3.0.0"
+
+# Use toml_extract to read and print version information from Cargo.toml
+toml = "0.8.20"
 
 # WebAssembly dependencies
 wasm-bindgen = "0.2"
