@@ -7,6 +7,7 @@ pub struct GraphConfig {
     pub layout: LayoutConfig,
     pub physics: PhysicsConfig,
     pub extraction: ExtractionConfig,
+    pub text_processing: TextProcessingConfig,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -51,6 +52,13 @@ pub struct ExtractionConfig {
     pub concept_patterns: Vec<String>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TextProcessingConfig {
+    pub remove_stopwords: bool,
+    pub stopwords_file: Option<String>,
+    pub custom_stopwords: Option<Vec<String>>,
+}
+
 impl Default for GraphConfig {
     fn default() -> Self {
         Self {
@@ -79,6 +87,7 @@ impl Default for GraphConfig {
                 spring_constant: 0.04,
             },
             extraction: ExtractionConfig::default(),
+            text_processing: TextProcessingConfig::default(),
         }
     }
 }
@@ -101,6 +110,16 @@ impl Default for ExtractionConfig {
                 r"\b(?:concept|idea|principle|theory|method|approach|strategy)\b".to_string(),
                 r"\b(?:system|process|workflow|procedure|protocol)\b".to_string(),
             ],
+        }
+    }
+}
+
+impl Default for TextProcessingConfig {
+    fn default() -> Self {
+        Self {
+            remove_stopwords: true,
+            stopwords_file: None,
+            custom_stopwords: None,
         }
     }
 }

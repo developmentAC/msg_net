@@ -116,6 +116,7 @@ A comprehensive Rust application that converts text data (chat messages, documen
 - **Professional UI**: Collapsible panels with Information Panel in top-right corner
 - **Hierarchical Layouts**: Organized visualization of entity relationships
 - **Metadata Preservation**: Maintains confidence scores and position information
+- **Advanced Stopword Removal**: Built-in English stopwords with custom file support and optional disabling
 
 ## Installation
 
@@ -183,6 +184,8 @@ cargo run -- generate [OPTIONS] -i <input> -o <output>
 - `--deep-analysis`: Use deep analysis with LLM for comprehensive relationship extraction
 - `--llm-model <MODEL>`: LLM model name (default: `llama3.2`)
 - `--llm-endpoint <URL>`: LLM endpoint URL
+- `--stopwords-file <FILE>`: Custom stopwords file (one word per line)
+- `--no-remove-stopwords`: Disable stopword removal entirely
 
 **Examples:**
 
@@ -201,6 +204,10 @@ cargo run -- generate -i document.txt -o graph.html --use-llm --llm-model llama3
 
 # Deep analysis for comprehensive relationship extraction
 cargo run -- generate -i document.txt -o deep_graph.html --use-llm --deep-analysis
+
+# Stopword processing options
+cargo run -- generate -i document.txt -o graph.html --no-remove-stopwords  # Keep all words
+cargo run -- generate -i document.txt -o graph.html --stopwords-file custom_stopwords.txt  # Use custom stopwords
 ```
 
 #### Comprehensive Help
@@ -221,6 +228,8 @@ cargo run -- analyze [OPTIONS] -i <input>
 - `-i, --input <FILE>`: Input text file path
 - `-v, --verbose`: Show detailed analysis
 - `-c, --config <FILE>`: Configuration file path
+- `--stopwords-file <FILE>`: Custom stopwords file (one word per line)
+- `--no-remove-stopwords`: Disable stopword removal entirely
 
 **Example:**
 
@@ -495,6 +504,63 @@ cargo run -- generate -i document.txt -o deep.html --use-llm --deep-analysis
 
 # Deep analysis with metadata export
 cargo run -- generate -i document.txt -o deep.json -f json --use-llm --deep-analysis --include-metadata
+```
+
+### Stopword Processing
+
+MSG_NET includes advanced stopword removal capabilities to improve entity extraction and graph clarity by filtering out common, non-meaningful words.
+
+#### Default Behavior
+
+- **Enabled by Default**: Stopwords are automatically removed from processed text
+- **Built-in English Stopwords**: Comprehensive list of 100+ common English words
+- **Smart Filtering**: Preserves context while removing noise
+
+#### Custom Stopword Files
+
+Create a text file with one word per line:
+
+```text
+# Custom stopwords file (comments start with #)
+the
+a
+an
+and
+or
+but
+```
+
+Usage:
+```bash
+# Use custom stopwords file
+cargo run -- generate -i document.txt -o graph.html --stopwords-file my_stopwords.txt
+
+# Analyze with custom stopwords
+cargo run -- analyze -i document.txt --stopwords-file my_stopwords.txt --verbose
+```
+
+#### Disabling Stopword Removal
+
+```bash
+# Keep all words (no stopword removal)
+cargo run -- generate -i document.txt -o graph.html --no-remove-stopwords
+
+# Analysis without stopword removal
+cargo run -- analyze -i document.txt --no-remove-stopwords --verbose
+```
+
+#### Configuration File Support
+
+Add stopword settings to your JSON configuration:
+
+```json
+{
+  "text_processing": {
+    "remove_stopwords": true,
+    "stopwords_file": "path/to/custom_stopwords.txt",
+    "custom_stopwords": ["word1", "word2", "word3"]
+  }
+}
 ```
 
 ## Interactive Graph Features

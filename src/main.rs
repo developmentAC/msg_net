@@ -12,7 +12,7 @@ use std::fs;
 #[derive(Parser)]
 #[command(name = "msg_net")]
 #[command(about = "\t Entity Relationship Graph Visualizer - Convert text into interactive network graphs")]
-#[command(version = "0.1.0")]
+#[command(version = "0.12.0")]
 struct Cli {
     #[command(subcommand)]
     command: Commands,
@@ -61,6 +61,14 @@ enum Commands {
         /// LLM endpoint URL
         #[arg(long, default_value = "http://localhost:11434/api/generate")]
         llm_endpoint: String,
+        
+        /// Custom stopwords file (one word per line). If not provided, uses built-in English stopwords
+        #[arg(long)]
+        stopwords_file: Option<String>,
+        
+        /// Disable stopword removal entirely
+        #[arg(long)]
+        no_remove_stopwords: bool,
     },
     
     /// Validate and process text without generating output
@@ -76,6 +84,14 @@ enum Commands {
         /// Configuration file path (JSON)
         #[arg(short, long)]
         config: Option<String>,
+        
+        /// Custom stopwords file (one word per line). If not provided, uses built-in English stopwords
+        #[arg(long)]
+        stopwords_file: Option<String>,
+        
+        /// Disable stopword removal entirely
+        #[arg(long)]
+        no_remove_stopwords: bool,
     },
     
     /// Generate a sample configuration file
@@ -171,6 +187,8 @@ async fn main() -> Result<()> {
             deep_analysis,
             llm_model,
             llm_endpoint,
+            stopwords_file,
+            no_remove_stopwords,
         } => {
             generate_graph(
                 &input,
@@ -183,6 +201,8 @@ async fn main() -> Result<()> {
                 deep_analysis,
                 &llm_model,
                 &llm_endpoint,
+                stopwords_file.as_deref(),
+                no_remove_stopwords,
             )
             .await
         }
@@ -190,7 +210,9 @@ async fn main() -> Result<()> {
             input,
             verbose,
             config,
-        } => analyze_text(&input, verbose, config.as_deref()).await,
+            stopwords_file,
+            no_remove_stopwords,
+        } => analyze_text(&input, verbose, config.as_deref(), stopwords_file.as_deref(), no_remove_stopwords).await,
         Commands::Config { output } => generate_config(&output),
         Commands::Example {
             generate_text,
@@ -223,6 +245,8 @@ async fn generate_graph(
     deep_analysis: bool,
     llm_model: &str,
     llm_endpoint: &str,
+    stopwords_file: Option<&str>,
+    no_remove_stopwords: bool,
 ) -> Result<()> {
     println!("🚀 Starting Entity Relationship Graph generation...");
     
@@ -266,7 +290,7 @@ async fn generate_graph(
 
     // Process text
     println!("🔍 Processing text...");
-    let processor = TextProcessor::new()?;
+    let processor = TextProcessor::new_with_options(stopwords_file, !no_remove_stopwords)?;
     let processed_text = processor.process_text(&text, source_type)?;
     
     println!(
@@ -349,6 +373,8 @@ async fn analyze_text(
     input_path: &str,
     verbose: bool,
     config_path: Option<&str>,
+    stopwords_file: Option<&str>,
+    no_remove_stopwords: bool,
 ) -> Result<()> {
     println!("🔍 Analyzing text file: {}", input_path);
 
@@ -373,7 +399,7 @@ async fn analyze_text(
     };
 
     // Process text
-    let processor = TextProcessor::new()?;
+    let processor = TextProcessor::new_with_options(stopwords_file, !no_remove_stopwords)?;
     let processed_text = processor.process_text(&text, SourceType::Document)?;
 
     // Basic analysis
@@ -640,22 +666,43 @@ fn show_comprehensive_help() -> Result<()> {
     println!("     --llm-model llama3.2 --llm-endpoint http://localhost:11434/api/generate");
     println!();
     
+    println!("📝 STOPWORD PROCESSING:");
+    println!("------------------------");
+    println!("7. Default behavior (built-in English stopwords removed):");
+    println!("   cargo run -- generate -i document.txt -o clean_graph.html");
+    println!();
+    
+    println!("8. Keep all words (disable stopword removal):");
+    println!("   cargo run -- generate -i document.txt -o full_graph.html --no-remove-stopwords");
+    println!();
+    
+    println!("9. Use custom stopwords file:");
+    println!("   echo -e 'the\\na\\nand\\nor' > custom_stopwords.txt");
+    println!("   cargo run -- generate -i document.txt -o custom_graph.html --stopwords-file custom_stopwords.txt");
+    println!();
+    
+    println!("10. Compare processing with and without stopwords:");
+    println!("    cargo run -- analyze -i document.txt --verbose");
+    println!("    cargo run -- analyze -i document.txt --verbose --no-remove-stopwords");
+    println!();
+    
     println!("⚙️  CONFIGURATION & ANALYSIS:");
     println!("------------------------------");
-    println!("7. Create custom configuration:");
+    println!("11. Create custom configuration:");
     println!("   cargo run -- config -o my_config.json");
     println!("   # Edit my_config.json to customize colors, shapes, extraction patterns");
     println!("   cargo run -- generate -i text.txt -o graph.html -c my_config.json");
     println!();
     
-    println!("8. Analyze text without generating output:");
+    println!("12. Analyze text without generating output:");
     println!("   cargo run -- analyze -i document.txt --verbose");
     println!("   cargo run -- analyze -i document.txt -c my_config.json");
+    println!("   cargo run -- analyze -i document.txt --verbose --stopwords-file my_stopwords.txt");
     println!();
     
     println!("📊 WORKFLOW EXAMPLES:");
     println!("----------------------");
-    println!("9. Complete workflow for new project:");
+    println!("13. Complete workflow for new project:");
     println!("   # Generate sample text");
     println!("   cargo run -- example --generate-text -o project_docs.txt");
     println!("   # Or generate AI story");
@@ -668,25 +715,44 @@ fn show_comprehensive_help() -> Result<()> {
     println!("   cargo run -- generate -i project_docs.txt -o project_graph.html -c project_config.json");
     println!();
     
-    println!("10. Batch processing with different source types:");
+    println!("14. Batch processing with different source types:");
     println!("    cargo run -- generate -i chat_log.txt -o chat_graph.html -s chat");
     println!("    cargo run -- generate -i email_thread.txt -o email_graph.html -s email");
     println!("    cargo run -- generate -i research_paper.txt -o paper_graph.html -s article");
     println!("    cargo run -- generate -i technical_doc.txt -o doc_graph.html -s document");
     println!();
     
+    println!("15. Stopword processing workflow:");
+    println!("    # First, analyze with default stopwords");
+    println!("    cargo run -- analyze -i document.txt --verbose");
+    println!("    # Compare with no stopwords");
+    println!("    cargo run -- analyze -i document.txt --verbose --no-remove-stopwords");
+    println!("    # Create custom stopwords and test");
+    println!("    echo -e 'custom\\nwords\\nto\\nremove' > my_stopwords.txt");
+    println!("    cargo run -- generate -i document.txt -o custom.html --stopwords-file my_stopwords.txt");
+    println!();
+    
     println!("🔬 DEEP ANALYSIS EXAMPLES:");
     println!("---------------------------");
-    println!("11. Compare standard vs deep analysis:");
+    println!("16. Compare standard vs deep analysis:");
     println!("    # Standard analysis");
     println!("    cargo run -- generate -i complex_doc.txt -o standard.html --use-llm");
     println!("    # Deep analysis");
     println!("    cargo run -- generate -i complex_doc.txt -o deep.html --use-llm --deep-analysis");
     println!();
     
-    println!("12. Export deep analysis results in multiple formats:");
+    println!("17. Export deep analysis results in multiple formats:");
     println!("    cargo run -- generate -i document.txt -o results.html --use-llm --deep-analysis");
     println!("    cargo run -- generate -i document.txt -o results.json -f json --use-llm --deep-analysis --include-metadata");
+    println!();
+    
+    println!("18. Deep analysis with custom stopword processing:");
+    println!("    # Deep analysis with default stopwords");
+    println!("    cargo run -- generate -i document.txt -o deep_clean.html --use-llm --deep-analysis");
+    println!("    # Deep analysis keeping all words");
+    println!("    cargo run -- generate -i document.txt -o deep_full.html --use-llm --deep-analysis --no-remove-stopwords");
+    println!("    # Deep analysis with custom stopwords");
+    println!("    cargo run -- generate -i document.txt -o deep_custom.html --use-llm --deep-analysis --stopwords-file custom.txt");
     println!();
     
     println!("📁 FILE ORGANIZATION:");
@@ -715,6 +781,8 @@ fn show_comprehensive_help() -> Result<()> {
     println!("   2. For LLM features, ensure Ollama is running: 'ollama serve'");
     println!("   3. For deep analysis, ensure LLM model is available: 'ollama pull llama3.2'");
     println!("   4. Use 'cargo clean && cargo build' if compilation fails");
+    println!("   5. For stopwords files: ensure file exists and has one word per line");
+    println!("   6. To debug stopword processing: use 'analyze --verbose' to see word counts");
     println!();
     
     println!("📖 MORE HELP:");
@@ -742,6 +810,12 @@ fn show_comprehensive_help() -> Result<()> {
     println!("   For advanced users:");
     println!("   1. cargo run -- config -o advanced_config.json");
     println!("   2. cargo run -- generate -i your_document.txt -o advanced.html --use-llm --deep-analysis -c advanced_config.json");
+    println!();
+    
+    println!("   For stopword processing experimentation:");
+    println!("   1. cargo run -- analyze -i your_document.txt --verbose");
+    println!("   2. cargo run -- analyze -i your_document.txt --verbose --no-remove-stopwords");
+    println!("   3. Compare the word counts to see the effect of stopword removal");
     println!();
     
     Ok(())
