@@ -119,6 +119,13 @@ impl TextProcessor {
     }
 
     pub fn process_text(&self, text: &str, source_type: SourceType) -> Result<ProcessedText> {
+        // Print stopword processing status
+        if self.remove_stopwords {
+            println!("🔍 Processing text with stopword removal enabled");
+        } else {
+            println!("🔍 Processing text with stopword removal disabled");
+        }
+        
         let cleaned_text = self.clean_text(text)?;
         let sentences = self.extract_sentences(&cleaned_text)?;
         let words = self.extract_words(&cleaned_text)?;
