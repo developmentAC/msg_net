@@ -21,6 +21,11 @@ colored = "3.0.0"
 # Use toml_extract to read and print version information from Cargo.toml
 toml = "0.8.20"
 
+[dev-dependencies]
+tempfile = "3.8"
+assert_cmd = "2.0"
+predicates = "3.0"
+
 # WebAssembly dependencies
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"

@@ -276,3 +276,167 @@ impl Default for TextProcessor {
         Self::new().expect("Failed to create default TextProcessor")
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::io::Write;
+    use tempfile::NamedTempFile;
+
+    #[test]
+    fn test_default_stopwords_removal() {
+        let processor = TextProcessor::new().expect("Failed to create processor");
+        let text = "The quick brown fox jumps over the lazy dog and the cat.";
+        let processed = processor.process_text(text, SourceType::Document).expect("Failed to process text");
+        
+        // With stopwords removed, should have fewer words
+        assert!(processed.words.len() < text.split_whitespace().count());
+        
+        // Should not contain common stopwords
+        assert!(!processed.words.contains(&"the".to_string()));
+        assert!(!processed.words.contains(&"and".to_string()));
+        assert!(!processed.words.contains(&"over".to_string()));
+        
+        // Should contain content words
+        assert!(processed.words.contains(&"quick".to_string()));
+        assert!(processed.words.contains(&"brown".to_string()));
+        assert!(processed.words.contains(&"fox".to_string()));
+    }
+
+    #[test]
+    fn test_no_stopwords_removal() {
+        let processor = TextProcessor::new_with_options(None, false).expect("Failed to create processor");
+        let text = "The quick brown fox jumps over the lazy dog.";
+        let processed = processor.process_text(text, SourceType::Document).expect("Failed to process text");
+        
+        // With no stopword removal, should have all words (converted to lowercase)
+        let original_word_count = text.split_whitespace().count();
+        assert_eq!(processed.words.len(), original_word_count);
+        
+        // Should contain stopwords
+        assert!(processed.words.contains(&"the".to_string()));
+        assert!(processed.words.contains(&"over".to_string()));
+    }
+
+    #[test]
+    fn test_custom_stopwords_file() {
+        // Create a temporary stopwords file
+        let mut temp_file = NamedTempFile::new().expect("Failed to create temp file");
+        writeln!(temp_file, "quick").expect("Failed to write to temp file");
+        writeln!(temp_file, "brown").expect("Failed to write to temp file");
+        writeln!(temp_file, "# This is a comment").expect("Failed to write to temp file");
+        writeln!(temp_file, "jumps").expect("Failed to write to temp file");
+        
+        let temp_path = temp_file.path().to_str().expect("Failed to get temp path");
+        let processor = TextProcessor::new_with_options(Some(temp_path), true).expect("Failed to create processor");
+        
+        let text = "The quick brown fox jumps over the lazy dog.";
+        let processed = processor.process_text(text, SourceType::Document).expect("Failed to process text");
+        
+        // Should not contain our custom stopwords
+        assert!(!processed.words.contains(&"quick".to_string()));
+        assert!(!processed.words.contains(&"brown".to_string()));
+        assert!(!processed.words.contains(&"jumps".to_string()));
+        
+        // Should contain other words
+        assert!(processed.words.contains(&"the".to_string())); // "the" not in our custom list
+        assert!(processed.words.contains(&"fox".to_string()));
+        assert!(processed.words.contains(&"dog".to_string()));
+    }
+
+    #[test]
+    fn test_stopwords_case_insensitive() {
+        let processor = TextProcessor::new().expect("Failed to create processor");
+        let text = "THE Quick Brown FOX jumps OVER the Lazy DOG.";
+        let processed = processor.process_text(text, SourceType::Document).expect("Failed to process text");
+        
+        // All words should be lowercase and stopwords removed
+        assert!(!processed.words.contains(&"the".to_string()));
+        assert!(!processed.words.contains(&"over".to_string()));
+        assert!(processed.words.contains(&"quick".to_string()));
+        assert!(processed.words.contains(&"brown".to_string()));
+        assert!(processed.words.contains(&"fox".to_string()));
+    }
+
+    #[test]
+    fn test_reconstruct_text_without_stopwords() {
+        let processor = TextProcessor::new().expect("Failed to create processor");
+        let original_text = "The quick brown fox jumps over the lazy dog.";
+        
+        let reconstructed = processor.reconstruct_text_without_stopwords(original_text)
+            .expect("Failed to reconstruct text");
+        
+        // Should not contain stopwords
+        assert!(!reconstructed.contains(" the "));
+        assert!(!reconstructed.contains(" over "));
+        
+        // Should contain content words
+        assert!(reconstructed.contains("quick"));
+        assert!(reconstructed.contains("brown"));
+        assert!(reconstructed.contains("fox"));
+    }
+
+    #[test]
+    fn test_load_stopwords_from_file() {
+        // Create a temporary stopwords file
+        let mut temp_file = NamedTempFile::new().expect("Failed to create temp file");
+        writeln!(temp_file, "word1").expect("Failed to write to temp file");
+        writeln!(temp_file, "word2").expect("Failed to write to temp file");
+        writeln!(temp_file, "# comment line").expect("Failed to write to temp file");
+        writeln!(temp_file, "word3").expect("Failed to write to temp file");
+        writeln!(temp_file, "").expect("Failed to write empty line");
+        writeln!(temp_file, "word4").expect("Failed to write to temp file");
+        
+        let temp_path = temp_file.path().to_str().expect("Failed to get temp path");
+        let stopwords = TextProcessor::load_stopwords_from_file(temp_path)
+            .expect("Failed to load stopwords");
+        
+        assert_eq!(stopwords.len(), 4);
+        assert!(stopwords.contains("word1"));
+        assert!(stopwords.contains("word2"));
+        assert!(stopwords.contains("word3"));
+        assert!(stopwords.contains("word4"));
+        assert!(!stopwords.contains("# comment line"));
+        assert!(!stopwords.contains(""));
+    }
+
+    #[test]
+    fn test_default_english_stopwords() {
+        let stopwords = TextProcessor::default_english_stopwords();
+        
+        // Should contain common English stopwords
+        assert!(stopwords.contains("the"));
+        assert!(stopwords.contains("and"));
+        assert!(stopwords.contains("but"));
+        assert!(stopwords.contains("in"));
+        assert!(stopwords.contains("on"));
+        assert!(stopwords.contains("at"));
+        
+        // Should be a reasonable size (not too small, not too large)
+        assert!(stopwords.len() > 50);
+        assert!(stopwords.len() < 500);
+    }
+
+    #[test]
+    fn test_empty_text_processing() {
+        let processor = TextProcessor::new().expect("Failed to create processor");
+        let processed = processor.process_text("", SourceType::Document).expect("Failed to process empty text");
+        
+        assert_eq!(processed.words.len(), 0);
+        assert_eq!(processed.sentences.len(), 0);
+        assert_eq!(processed.cleaned_text, "");
+    }
+
+    #[test]
+    fn test_punctuation_handling_with_stopwords() {
+        let processor = TextProcessor::new().expect("Failed to create processor");
+        let text = "The quick, brown fox! Jumps over the lazy dog?";
+        let processed = processor.process_text(text, SourceType::Document).expect("Failed to process text");
+        
+        // Should handle punctuation correctly while removing stopwords
+        assert!(processed.words.contains(&"quick".to_string()));
+        assert!(processed.words.contains(&"brown".to_string()));
+        assert!(!processed.words.contains(&"the".to_string()));
+        assert!(!processed.words.contains(&"over".to_string()));
+    }
+}

@@ -1,4 +1,5 @@
-the
-a
-and
-or
+quick
+brown
+fox
+cat
+bird

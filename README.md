@@ -683,15 +683,73 @@ cargo fmt
 
 ### Testing
 
+MSG_NET includes comprehensive test suites to ensure the stopword functionality and all other features work correctly.
+
+#### Running All Tests
+
 ```bash
-# Run all tests
+# Run all unit and integration tests
 cargo test
 
-# Test specific module
+# Run tests with detailed output
+cargo test -- --nocapture
+
+# Run only unit tests
+cargo test --lib
+
+# Run only integration tests
+cargo test --test "*"
+```
+
+#### Stopword-Specific Testing
+
+```bash
+# Run stopword unit tests
+cargo test text_processor::tests::stopwords
+
+# Run stopword integration tests
+cargo test --test stopwords_integration_tests
+
+# Run configuration-based stopword tests
+cargo test --test config_stopwords_tests
+```
+
+#### Test Script for Comprehensive Validation
+
+For convenience, use the included test script that runs all tests with colored output:
+
+```bash
+# Make script executable (if not already)
+chmod +x test_stopwords.sh
+
+# Run comprehensive test suite
+./test_stopwords.sh
+
+# The script includes:
+# - All 9 unit tests for text processing and stopwords
+# - All 12 integration tests for CLI stopword functionality
+# - All 3 configuration-based stopword tests
+# - Manual test examples for verification
+```
+
+#### Test Coverage
+
+- **Unit Tests (9 tests)**: Core stopword functionality, default lists, custom file loading
+- **Integration Tests (12 tests)**: CLI argument handling, file processing, help documentation
+- **Configuration Tests (3 tests)**: JSON configuration with stopword settings
+- **Manual Tests**: Real-world usage examples with sample data
+
+#### Testing Specific Modules
+
+```bash
+# Test text processor module
 cargo test text_processor
 
-# Run with output
-cargo test -- --nocapture
+# Test specific test function
+cargo test test_default_english_stopwords
+
+# Test with verbose output
+cargo test test_custom_stopwords_file -- --nocapture
 ```
 
 ### Adding Features
