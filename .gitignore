@@ -8,6 +8,7 @@
 target/
 0_networks/
 sampleData/
+custom_stopwords.txt
 
 # bash #
 ########
